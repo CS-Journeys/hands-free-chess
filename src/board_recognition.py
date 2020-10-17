@@ -1,13 +1,15 @@
-from win32api import GetSystemMetrics
 from PIL import ImageGrab
 import numpy as np
 import cv2
+import tkinter
 
 import chess_piece
 
-SCREEN_WIDTH = GetSystemMetrics(0)
-SCREEN_HEIGHT = GetSystemMetrics(1)
-SCREEN_RATIO = SCREEN_WIDTH / SCREEN_HEIGHT
+tkinter_root  = tkinter.Tk()
+SCREEN_WIDTH  = tkinter_root.winfo_screenwidth()
+SCREEN_HEIGHT = tkinter_root.winfo_screenheight()
+tkinter_root.destroy()
+SCREEN_RATIO  = SCREEN_WIDTH / SCREEN_HEIGHT
 SCREEN_SCALAR = 400
 REFERENCE_IMG_DIM = 33 # width and height in pixels
 NUM_SKIP_PIXELS = 3
