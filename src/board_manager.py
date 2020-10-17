@@ -13,9 +13,8 @@
 #     command[3] is the destination letter (lowercase a-h)
 #     command[4] is the destination number (1-8)
 #
-# board_data is a tuple of two 9-element lists
-#   first tuple contains the x coordinates of each vertical line
-#   second tuple contains the y coordinates of each horizontal line   
+# board_data is a 8x8 numpy array
+#   each element is a string that represents a piece ("knight", "pawn", "empty", etc.)
 #
 ######################################################################
 
