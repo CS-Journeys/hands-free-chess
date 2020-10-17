@@ -1,6 +1,3 @@
-# use DearPyGui?
-# use Tkinter?
-
 # TODO: amazing UI initialization stuff
 # TODO: add start/stop buttons
 
