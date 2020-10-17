@@ -12,7 +12,6 @@ tkinter_root.destroy()
 SCREEN_RATIO  = SCREEN_WIDTH / SCREEN_HEIGHT
 SCREEN_SCALAR = 400
 REFERENCE_IMG_DIM = 33 # width and height in pixels
-NUM_SKIP_PIXELS = 3
 
 scaled_col_coords = []
 scaled_row_coords = []
@@ -49,7 +48,7 @@ def get_board_coords():
 
     columnsNotDetected = True
     pixelRow = int(SCREEN_SCALAR / 4) # don't start scanning at 0th pixel to save time
-    while (columnsNotDetected and pixelRow < SCREEN_SCALAR - NUM_SKIP_PIXELS - 1):
+    while (columnsNotDetected and pixelRow < SCREEN_SCALAR):
         scaled_col_coords = []
         pixelRow += 1
 
@@ -87,7 +86,7 @@ def get_board_coords():
             scaled_col_coords.append(scaled_col_coords[len(scaled_col_coords) - 1] + grid_width)
             columnsNotDetected = False
 
-    if (pixelRow >= SCREEN_SCALAR - NUM_SKIP_PIXELS - 1):
+    if (pixelRow >= SCREEN_SCALAR):
         print("chessboard columns not detected")
         return None
 
@@ -176,7 +175,7 @@ def identify_piece(col, row):
                                   dsize=(REFERENCE_IMG_DIM, REFERENCE_IMG_DIM),
                                   interpolation=cv2.INTER_CUBIC)
 
-    # Get color of piece's tile
+    # Set color of piece's tile
     if ((col + row) % 2 == 0):
         tile_color = 1 # white
     else:
