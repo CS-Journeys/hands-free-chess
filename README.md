@@ -1,4 +1,4 @@
-# hands-free-chess
+# Hands-Free Chess
 Play chess online using only your voice instead of a keyboard and mouse!
 
 ## Getting started
