@@ -18,14 +18,33 @@
 #
 ######################################################################
 
+import numpy as np
+
+
 def is_legal_move(command, board_data):
     # FIXME
     return True
 
 def get_initial_position(command, board_data):
-    # FIXME
-    return (0, 1)
+    initial_position = (-1, -1)
+    
+    if (len(command) == 5): # explicit starting position structure
+        initial_position = _alphanum_to_indices(command[0], int(command[1]))
+        
+    else:                   # implicit starting position structure
+        # TODO: figure out initial position based on which piece can legally
+        #       be moved to the position that was declared by the command
+        pass
+    
+    return (initial_position)
 
 def get_final_position(command, board_data):
-    # FIXME
-    return (0, 3)
+    final_position = _alphanum_to_indices(command[-2], int(command[-1]))
+    return final_position
+
+
+### Private Functions ###
+def _alphanum_to_indices(alpha, num):
+    col = ord(alpha) - 97
+    row = num - 1
+    return (col, row)
