@@ -13,4 +13,3 @@ Begin chess game on [chess.com](https://www.chess.com)
 Say a single or combination of [keywords](res/keywords.txt)
 
 Let the program do the rest!
-hi :)
