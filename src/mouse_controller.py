@@ -18,5 +18,15 @@
 import pyautogui
 
 def move_piece(start, end, board_coords):
-    # FIXME
-    pyautogui.moveTo(100, 400)
+    # Define the actual coordinates for the mouse. Rounded just in case partial pixels are frowned upon.
+    # Just takes the arithmetic mean of the vertical/horizontal boundaries of the square to find the approximate center
+    # to click.
+    x_start = round((board_coords[0][start[0]] + board_coords[0][start[0]+1]) / 2)
+    y_start = round((board_coords[1][start[1]] + board_coords[1][start[1]+1]) / 2)
+
+    x_end = round((board_coords[0][end[0]] + board_coords[0][end[0]+1]) / 2)
+    y_end = round((board_coords[1][end[1]] + board_coords[1][end[1]+1]) / 2)
+    
+    pyautogui.click(x_start, y_start)
+    pyautogui.click(x_end, y_end)
+
