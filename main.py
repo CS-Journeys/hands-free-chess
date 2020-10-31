@@ -5,7 +5,7 @@ import src.command_recognition as cmd_recog
 import src.board_recognition as b_recog
 import src.board_manager as b_manager
 import src.user_interface as ui
-import src.mouse_controller
+import src.mouse_controller as mouse_controller
 
 BOARD_CHECK_PAUSE_TIME = 1.5 # time (in seconds) to wait before rechecking for board
 
