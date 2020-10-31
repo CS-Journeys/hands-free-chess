@@ -1,14 +1,13 @@
 import numpy as np
 import time
 
-import command_recognition as cmd_recog
-import board_recognition   as b_recog
-import board_manager       as b_manager
-import user_interface      as ui
-import mouse_controller
+import src.command_recognition as cmd_recog
+import src.board_recognition as b_recog
+import src.board_manager as b_manager
+import src.user_interface as ui
+import src.mouse_controller
 
 BOARD_CHECK_PAUSE_TIME = 1.5 # time (in seconds) to wait before rechecking for board
-
 
 def main():
 
@@ -21,7 +20,7 @@ def main():
     cmd_recog.adjust_for_ambient_noise(2.0)
     ui.print_to_user("Listening. What's your move?")
 
-    # Main loop
+    # Main loop (CTRL + C To Exit)
     while True:
         user_command.extend(cmd_recog.get_voice_commands())
         if user_command == ['exit']:
@@ -51,9 +50,9 @@ def main():
                 ui.print_to_user("Illegal move! Try again.")
                 pass
 
-            # TODO: check for game over
+            # TO DO: check for game over
 
-            # DELETEME (this is just for debugging)
+            # DELETE ME (this is just for debugging)
             formatted_board_data = format_board_matrix(board_data)
             print(formatted_board_data)
 

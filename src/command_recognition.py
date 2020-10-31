@@ -5,7 +5,7 @@
 import speech_recognition as sr
 import json
 
-KEYWORDS_PATH = "../res/keywords.txt"
+KEYWORDS_PATH = "res/keywords.txt"
 
 try:
     keywords_file = open(KEYWORDS_PATH)
@@ -53,6 +53,8 @@ def gather_input(s):
             result.insert(i + 1, "e")
         elif part == "for":
             result[i] = "4"
+        elif part == "at":
+            result[i] = "f"
     if result[0] == "9" and result[1].isdigit(): # ninety-four means Knight E4
         result = ["knight", "e", result[1]]
 

@@ -3,7 +3,7 @@ import numpy as np
 import cv2
 import tkinter
 
-import chess_piece
+from src import chess_piece
 
 tkinter_root  = tkinter.Tk()
 SCREEN_WIDTH  = tkinter_root.winfo_screenwidth()
