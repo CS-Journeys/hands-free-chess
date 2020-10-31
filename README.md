@@ -18,4 +18,4 @@ Say a single or combination of [keywords](res/keywords.txt)
 
 Let the program do the rest!
 
-```CTRL + C``` to exit the program via the Command Line
+Press ```CTRL + C``` in the command line or say "exit" into mic to exit 
