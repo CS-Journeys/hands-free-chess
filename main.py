@@ -1,11 +1,11 @@
 import numpy as np
 import time
 
-import src.command_recognition as cmd_recog
-import src.board_recognition as b_recog
-import src.board_manager as b_manager
-import src.user_interface as ui
-import src.mouse_controller as mouse_controller
+from src import command_recognition as cmd_recog
+from src import board_recognition as b_recog
+from src import board_manager as b_manager
+from src import user_interface as ui
+from src import mouse_controller
 
 BOARD_CHECK_PAUSE_TIME = 1.5 # time (in seconds) to wait before rechecking for board
 
@@ -21,10 +21,8 @@ def main():
     ui.print_to_user("Listening. What's your move?")
 
     # Main loop (CTRL + C To Exit)
-    while True:
+    while user_command != ['exit']:
         user_command.extend(cmd_recog.get_voice_commands())
-        if user_command == ['exit']:
-            break # sorry Dr. Booth
 
         # Proceed if command contains at least 3 parts (minimum num for a valid cmd)
         if (len(user_command) >= 3):
