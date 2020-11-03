@@ -9,7 +9,7 @@
 import numpy as np
 from PIL import Image
 
-IMG_FILEPATH = '../res/chess-piece-images/'
+IMG_FILEPATH = 'res/chess-piece-images/'
 
 class ChessPiece:
     def __init__(self, name, color):
