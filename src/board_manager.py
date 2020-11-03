@@ -22,7 +22,7 @@ import numpy as np
 
 
 def is_legal_move(command, board_data):
-    # FIXME
+    # FIX ME
     return True
 
 def get_initial_position(command, board_data):
@@ -32,7 +32,7 @@ def get_initial_position(command, board_data):
         initial_position = _alphanum_to_indices(command[0], int(command[1]))
         
     else:                   # implicit starting position structure
-        # TODO: figure out initial position based on which piece can legally
+        # TO-DO: figure out initial position based on which piece can legally
         #       be moved to the position that was declared by the command
         pass
     
@@ -45,6 +45,6 @@ def get_final_position(command, board_data):
 
 ### Private Functions ###
 def _alphanum_to_indices(alpha, num):
-    col = ord(alpha) - 97
-    row = num - 1
+    col = 8 - (ord(alpha) - 97) # correct column position if user is black
+    row = num - 1               # correct row position if user is black
     return (col, row)
