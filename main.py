@@ -50,7 +50,7 @@ def main():
                 ui.print_to_user("Illegal move! Try again.")
                 pass
 
-            # TO DO: check for game over
+            # TO-DO: check for game over
 
             # DELETE ME (this is just for debugging)
             formatted_board_data = format_board_matrix(board_data)
