@@ -16,6 +16,9 @@
 # board_data is a 8x8 numpy array
 #   each element is a ChessPiece object
 #
+# user_color is a string
+#   either "black" or "white"
+#
 ######################################################################
 
 import numpy as np
