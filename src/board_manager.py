@@ -49,7 +49,7 @@ def is_ambiguous_move(command, board_data, user_color):
     return is_ambiguous
 
 def get_initial_position(command, board_data, user_color):
-    initial_position = UNDERTERMINED_POSITION
+    initial_position = UNDETERMINED_POSITION
 
     # explicit starting position structure
     if (len(command) == 5): 
