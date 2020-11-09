@@ -41,14 +41,21 @@ def main():
                 for col in range(1, 8+1):
                     board_data[row-1][col-1] = b_recog.identify_piece(col,row)
 
-            # If move is legal, move piece with mouse
-            if (b_manager.is_legal_move(user_command, board_data)):
-                initial_position = b_manager.get_initial_position(user_command, board_data)
+            # Notify user if move is ambiguous
+            if (b_manager.is_ambiguous_move(user_command, board_data, user_color)):
+                ui.print_to_user("Ambiguous move. Please repeat and specify which "
+                                 + str(b_manager.extract_piece_name(user_command))
+                                 + " you want to move.")
+                
+            # If move is legal and unambiguous, move piece with mouse
+            elif (b_manager.is_legal_move(user_command, board_data, user_color)):
+                initial_position = b_manager.get_initial_position(user_command, board_data, user_color)
                 final_position = b_manager.get_final_position(user_command, board_data)
                 mouse_controller.move_piece(initial_position, final_position, board_coords)
+                
+            # Notify user if move is illegal
             else:
                 ui.print_to_user("Illegal move! Try again.")
-                pass
 
             # TO-DO: check for game over
 

@@ -12,7 +12,7 @@ from PIL import Image
 IMG_FILEPATH = 'res/chess-piece-images/'
 
 class ChessPiece:
-    def __init__(self, name, color):
+    def __init__(self, name, color = 'empty'):
         self.name = name
         self.color = color
         self.img_onblack_fname = name + '-' + color + '-black.png'
@@ -24,16 +24,10 @@ class ChessPiece:
         is_legal = True
 
         # Rules that apply to all types of pieces
-        if board_data[currentPos[1], currentPos[0]].name != self.name:
-            is_legal = False # can't move piece from position A to position B
-                             # if piece was not originally in position A
         if currentPos == nextPos:
             is_legal = False # can't "move" by not moving
         if board_data[nextPos[1], nextPos[0]].color == self.color:
             is_legal = False # can't move to spot occupied by piece of same color
-
-        if not is_legal:
-            print("GENERAL RULE FALSE")
 
         # Useful variables for helping to determine if a piece is in the way
         sorted_rows = [currentPos[1], nextPos[1]]
@@ -77,7 +71,7 @@ class ChessPiece:
         # PAWN
         elif self.name == 'pawn':
             # not vertical move
-            if not _on_vertical_line:
+            if (not _on_vertical_line(sorted_columns)):
                 is_legal = False
             # move forward by 2, but...
             if currentPos[1] - nextPos[1] == 2:
@@ -147,7 +141,7 @@ def _on_horizontal_line(rows):
 def _on_first_diagonal(coords1, coords2):
     return (coords1[0] - coords2[0] == coords1[1] - coords2[1])
 
-def _on_second_diagonal(coords1, coord2):
+def _on_second_diagonal(coords1, coords2):
     return (coords1[0] - coords2[0] == coords2[1] - coords1[1])
 
 def _vertical_is_blocked(column, sorted_rows, board_data):
