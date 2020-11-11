@@ -1,12 +1,5 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-# TODO: amazing UI initialization stuff
-# TODO: add start/stop buttons
-# import PySimpleGUI as sg
 import sys
 from PyQt5.QtWidgets import *
-import time
-
 import main
 
 
@@ -37,7 +30,7 @@ class ChessUI(QWidget):
     def buttonClicked(self, e):
         sender = self.sender()
         if sender.text() == 'Start':
-            print("START")
+            self.start_button.setDisabled(True)
             print_to_user("Starting application...")
             main.main
         elif sender.text() == 'Stop':
