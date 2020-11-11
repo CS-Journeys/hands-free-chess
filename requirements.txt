@@ -31,3 +31,4 @@ soupsieve==2.0.1
 SpeechRecognition==3.8.1
 tzlocal==2.1
 urllib3==1.25.11
+PyQt5==5.15.1

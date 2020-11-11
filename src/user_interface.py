@@ -1,50 +1,64 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 # TODO: amazing UI initialization stuff
 # TODO: add start/stop buttons
-
-import PySimpleGUI as sg
-from main import main
+# import PySimpleGUI as sg
+import sys
+from PyQt5.QtWidgets import *
 import time
 
-check = True
-msg = ["1", "2", "3"]
-messages = list(msg);
-headings = ['Message']
-sg.theme("DarkAmber")
-layout = [[sg.Table(values=messages[:][:],
-                    headings=headings,
-                    col_widths=[300],
-                    max_col_width=25,
-                    auto_size_columns=True,
-                    display_row_numbers=False,
-                    justification='right',
-                    num_rows=max(len(messages), 15),
-                    alternating_row_color='yellow',
-                    key='-TABLE-',
-                    row_height=35)],
-          [sg.Button("Start")], [sg.Button("Stop")]]
+import main
 
-window = sg.Window("Hands Free Chess", layout)
-table = window.FindElement('-TABLE-')
 
-def print_to_user(message):
-    messages.append(message)
-    window.write_event_value("Table", messages)
+class ChessUI(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.layout = QVBoxLayout()
+        self.label = QLabel(messages)
+        self.start_button = QPushButton("Start")
+        self.stop_button = QPushButton("Stop")
+        self.initUI()
 
-# Create an event loop
-while check:
-    event, value = window.read()
+    def initUI(self):
+        self.start_button.clicked.connect(self.buttonClicked)
+        self.stop_button.clicked.connect(self.buttonClicked)
 
-    if event == "Start":
-        main.main()
-        # print_to_user("Hello")
-        # print_to_user("World")
-    elif event == "Table":
-        window['-TABLE-'].update(values=messages[:][:])
-    elif event == "Stop" or event == sg.WIN_CLOSED:
-        check = False
-        window.close()
-        exit(0)
-    print("true")
+        self.layout.addWidget(self.label)
+        self.layout.addWidget(self.start_button)
+        self.layout.addWidget(self.stop_button)
 
-    # End program if user closes window or
-    # presses the OK button
+        self.setWindowTitle("Hands Free Chess")
+        self.setLayout(self.layout)
+        self.show()
+
+    def new_data_status(self):
+        self.label.setText(messages)
+
+    def buttonClicked(self, e):
+        sender = self.sender()
+        if sender.text() == 'Start':
+            print("START")
+            print_to_user("Starting application...")
+            main.main
+        elif sender.text() == 'Stop':
+            print_to_user("Stopping application...")
+            self.close()
+
+
+global messages
+
+if __name__ == "__main__":
+    app = QApplication([])
+
+    messages = ""
+    ui = ChessUI()
+
+    def print_to_user(message):
+        global messages
+        messages += (message + '\n')
+
+        print(message)
+        ui.new_data_status()
+
+    print_to_user('Click \"Start\" to begin.')
+    sys.exit(app.exec_())
