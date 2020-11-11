@@ -7,7 +7,8 @@ class ChessUI(QWidget):
     def __init__(self):
         super().__init__()
         self.layout = QVBoxLayout()
-        self.label = QLabel(messages)
+        self.messages = ""
+        self.label = QLabel(self.messages)
         self.start_button = QPushButton("Start")
         self.stop_button = QPushButton("Stop")
         self.initUI()
@@ -24,34 +25,39 @@ class ChessUI(QWidget):
         self.setLayout(self.layout)
         self.show()
 
-    def new_data_status(self):
-        self.label.setText(messages)
-
     def buttonClicked(self, e):
         sender = self.sender()
         if sender.text() == 'Start':
             self.start_button.setDisabled(True)
-            print_to_user("Starting application...")
-            main.main
+            self.print_to_user("Starting application...")
+            main.main()
         elif sender.text() == 'Stop':
-            print_to_user("Stopping application...")
+            self.print_to_user("Stopping application...")
             self.close()
 
+    def print_to_user(self, message):
+        self.label.setText(self.messages + '\n' + message)
+        self.messages += (message + '\n')
+        print(message)
 
-global messages
+
+global app
+app = QApplication([])
+
+global interface
+interface = ChessUI()
+
+
+def getUI():
+    global interface
+    return interface
+
+
+def print_to_user(message):
+    interface.print_to_user(message)
+
 
 if __name__ == "__main__":
-    app = QApplication([])
+    interface.print_to_user('Click \"Start\" to begin.')
 
-    messages = ""
-    ui = ChessUI()
-
-    def print_to_user(message):
-        global messages
-        messages += (message + '\n')
-
-        print(message)
-        ui.new_data_status()
-
-    print_to_user('Click \"Start\" to begin.')
     sys.exit(app.exec_())

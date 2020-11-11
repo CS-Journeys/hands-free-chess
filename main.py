@@ -56,7 +56,7 @@ def main():
 
             # Reset command before the next iteration
             user_command = []
-            
+
 
 # Useful helper function for aesthetic debugging <3, delete later
 def format_board_matrix(board_matrix):
