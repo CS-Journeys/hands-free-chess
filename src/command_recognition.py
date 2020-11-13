@@ -5,7 +5,7 @@
 import speech_recognition as sr
 import json
 
-KEYWORDS_PATH = "res/keywords.txt"
+KEYWORDS_PATH = "../res/keywords.txt"
 
 try:
     keywords_file = open(KEYWORDS_PATH)
@@ -101,4 +101,4 @@ def get_voice_commands():
         print("Google API response: " + str(recognition_guesses))
         print("********\n")
         
-    return user_input
+    return user_input, recognition_guesses
