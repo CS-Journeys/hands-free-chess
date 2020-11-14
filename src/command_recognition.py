@@ -83,6 +83,8 @@ def get_voice_commands():
         print("No speech detected\n********\n")
 
     if (speech_detected):
+
+        print(recognition_guesses)
         
         # Get keywords from first (and most likely correct) guess
         first_guess = recognition_guesses[0]['transcript'].lower()

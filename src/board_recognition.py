@@ -191,6 +191,7 @@ def identify_piece(col, row):
         current_img_difference = mse(screen_piece_img, reference_piece.img[tile_color])
         if current_img_difference < min_img_difference:
             min_img_difference = current_img_difference
-            piece_name = reference_piece.name
+            piece = reference_piece
 
-    return piece_name
+
+    return piece
