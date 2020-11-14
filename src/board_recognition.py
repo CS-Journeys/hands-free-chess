@@ -50,7 +50,6 @@ def get_board_coords():
     pixelRow = int(SCREEN_SCALAR / 4) # don't start scanning at 0th pixel to save time
     while (columnsNotDetected and pixelRow < SCREEN_SCALAR):
         scaled_col_coords = []
-        pixelRow += 1
 
         # Scan single pixel row for column pattern
         previousPixel = -1
@@ -85,6 +84,8 @@ def get_board_coords():
             scaled_col_coords.insert(0, scaled_col_coords[0] - grid_width)
             scaled_col_coords.append(scaled_col_coords[len(scaled_col_coords) - 1] + grid_width)
             columnsNotDetected = False
+
+        pixelRow += 1
 
     if (pixelRow >= SCREEN_SCALAR):
         print("chessboard columns not detected")
