@@ -14,7 +14,7 @@
 #     command[4] is the destination number (1-8)
 #
 # board_data is a 8x8 numpy array
-#   each element is a string that represents a piece ("knight", "pawn", "empty", etc.)
+#   each element is a chess piece type that contains name and color
 #
 ######################################################################
 
@@ -22,6 +22,7 @@ import numpy as np
 
 
 def is_legal_move(command, board_data):
+    
     # FIX ME
     return True
 
@@ -48,3 +49,5 @@ def _alphanum_to_indices(alpha, num):
     col = 8 - (ord(alpha) - 97) # correct column position if user is black
     row = num - 1               # correct row position if user is black
     return (col, row)
+
+    

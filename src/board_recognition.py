@@ -184,13 +184,13 @@ def identify_piece(col, row):
 
     # Initialize variables for finding closest resemblence
     min_img_difference = mse(screen_piece_img, chess_pieces[0].img[tile_color])
-    piece_name = chess_pieces[0].name
+    piece = chess_pieces[0]
     
     # Loop through chess pieces
     for reference_piece in chess_pieces:
         current_img_difference = mse(screen_piece_img, reference_piece.img[tile_color])
         if current_img_difference < min_img_difference:
             min_img_difference = current_img_difference
-            piece_name = reference_piece.name
+            piece = reference_piece
 
-    return piece_name
+    return piece

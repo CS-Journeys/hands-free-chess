@@ -6,13 +6,14 @@ from src import board_recognition as b_recog
 from src import board_manager as b_manager
 from src import user_interface as ui
 from src import mouse_controller
+from src import chess_piece
 
 BOARD_CHECK_PAUSE_TIME = 1.5 # time (in seconds) to wait before rechecking for board
 
 def main():
 
     # Variable initialization
-    board_data = np.full((8,8), 'unknown')
+    board_data = np.full((8,8), chess_piece.ChessPiece('unknown', 'unknown'))
     user_command = []
 
     # Adjust microphone for ambient noise
@@ -60,11 +61,13 @@ def main():
 
 # Useful helper function for aesthetic debugging <3, delete later
 def format_board_matrix(board_matrix):
-    board_matrix = np.where(board_matrix=="king", "K", board_matrix)
-    board_matrix = np.where(board_matrix=="empty", " ", board_matrix)
     for i in range(0, board_matrix.shape[0]):
         for j in range(0, board_matrix.shape[1]):
-            board_matrix[i,j] = board_matrix[i,j][0]
+            if board_matrix[i,j] == "king":
+                board_matrix[i,j] = "K"
+            if board_matrix[i,j] == "empty":
+                board_matrix[i,j] = " "
+            board_matrix[i,j] = board_matrix[i,j].name[0]
     return board_matrix
 
 if __name__ == "__main__":
