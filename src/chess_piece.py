@@ -85,6 +85,7 @@ class ChessPiece:
             # neither a move by 1 nor 2 spots forward
             elif currentPos[1] - nextPos[1] != 1:
                 is_legal = False
+        # TO-DO: add support for pawn attacks (diagonal move)
         # TO-DO: add support for 'en passant'
 
         # ROOK
