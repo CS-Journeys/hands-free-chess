@@ -59,11 +59,6 @@ def main():
             elif (b_manager.is_legal_move(user_command, user_color, board_data)):
                 initial_position = b_manager.get_initial_position(user_command, user_color, board_data)
                 final_position = b_manager.get_final_position(user_command, user_color, board_data)
-                
-            # If move is legal, move piece with mouse
-            if (b_manager.is_legal_move(user_command, board_data)):
-                initial_position = b_manager.get_initial_position(user_command, user_color, board_data)
-                final_position = b_manager.get_final_position(user_command, user_color, board_data)
                 mouse_controller.move_piece(initial_position, final_position, board_coords)
                 
             # Notify user if move is illegal
