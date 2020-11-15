@@ -14,10 +14,20 @@ def main():
     # Variable initialization
     board_data = np.full((8,8), 'unknown')
     user_command = []
+    piece_color = []
 
     # Adjust microphone for ambient noise
     ui.print_to_user("Please wait...")
     cmd_recog.adjust_for_ambient_noise(2.0)
+    ui.print_to_user("Listening. What's your piece color?")
+    while piece_color == []: # repeats until a valid piece color is provided - black or white
+        user_command.extend(cmd_recog.get_voice_commands())
+        if user_command == []:
+            continue
+        elif user_command[-1] == 'white':
+            piece_color = 'white'
+        elif user_command[-1] == 'black':
+            piece_color = 'black'
     ui.print_to_user("Listening. What's your move?")
 
     # Main loop (CTRL + C To Exit)
@@ -41,8 +51,8 @@ def main():
 
             # If move is legal, move piece with mouse
             if (b_manager.is_legal_move(user_command, board_data)):
-                initial_position = b_manager.get_initial_position(user_command, board_data)
-                final_position = b_manager.get_final_position(user_command, board_data)
+                initial_position = b_manager.get_initial_position(user_command, piece_color, board_data)
+                final_position = b_manager.get_final_position(user_command, piece_color, board_data)
                 mouse_controller.move_piece(initial_position, final_position, board_coords)
             else:
                 ui.print_to_user("Illegal move! Try again.")
