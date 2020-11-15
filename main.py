@@ -19,17 +19,16 @@ def main():
     # Adjust microphone for ambient noise
     ui.print_to_user("Please wait...")
     cmd_recog.adjust_for_ambient_noise(2.0)
-    ui.print_to_user("Listening. What's your piece color?")
-    while piece_color == []: # repeats until a valid piece color is provided - black or white
-        user_command.extend(cmd_recog.get_voice_commands())
-        if user_command == []:
-            continue
-        elif user_command[-1] == 'white':
-            piece_color = 'white'
-        elif user_command[-1] == 'black':
-            piece_color = 'black'
-    ui.print_to_user("Listening. What's your move?")
 
+    # Listen for color until a valid piece color is provided - black or white
+    ui.print_to_user("Listening. What's your piece color?")
+    while user_command != ['white'] and user_command != ['black']: 
+        user_command = cmd_recog.get_voice_commands()
+    piece_color = user_command[0]
+    
+    user_command = []
+    ui.print_to_user("Listening. What's your move?")
+    
     # Main loop (CTRL + C To Exit)
     while user_command != ['exit']:
         user_command.extend(cmd_recog.get_voice_commands())
