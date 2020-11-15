@@ -1,22 +1,23 @@
 import sys
 import threading
 
+from PyQt5.QtCore import QThread, pyqtSignal
 from PyQt5.QtWidgets import *
 from src import controller
 
-class StartThread(threading.Thread):
-    """Thread class with a stop() method. The thread itself has to check
-       regularly for the stopped() condition."""
-
-    def __init__(self, *args, **kwargs):
-        super(StartThread, self).__init__(*args, **kwargs)
-        self._stop_event = threading.Event()
-
-    def stop(self):
-        self._stop_event.set()
-
-    def stopped(self):
-        return self._stop_event.is_set()
+# class StartThread(threading.Thread):
+#     """Thread class with a stop() method. The thread itself has to check
+#        regularly for the stopped() condition."""
+#
+#     def __init__(self, *args, **kwargs):
+#         super(StartThread, self).__init__(*args, **kwargs)
+#         self._stop_event = threading.Event()
+#
+#     def stop(self):
+#         self._stop_event.set()
+#
+#     def stopped(self):
+#         return self._stop_event.is_set()
 
 class ChessUI(QWidget):
     def __init__(self):
@@ -28,6 +29,9 @@ class ChessUI(QWidget):
         self.pause_button = QPushButton("Pause")
         self.stop_button = QPushButton("Stop")
         self.thready = []
+        self.thread = Worker()
+        self.thread.signal.connect(self.quitApp)
+        self.paused = False
         self.initUI()
 
     def initUI(self):
@@ -52,44 +56,71 @@ class ChessUI(QWidget):
     def buttonClicked(self, e):
         sender = self.sender()
         if sender.text() == 'Start':
+            if self.paused:
+                self.print_to_user("Restarting application...")
+                self.print_to_user("Please wait...")
+            else:
+                self.print_to_user("Starting application...")
+                self.print_to_user("Please wait...")
+                controller.setup(self)
+            self.paused = False
             self.start_button.setDisabled(True)
-            self.print_to_user("Starting application...")
-            self.print_to_user("Please wait...")
-            controller.setup()
             self.start()
 
         elif sender.text() == 'Pause':
+            self.paused = True
             self.start_button.setDisabled(False)
             self.print_to_user("Application Paused")
-            self.thready[0].stop()
+            self.thread.quit = True
+            # self.thready[0].join()
 
         elif sender.text() == 'Stop':
             self.quitApp()
 
     def start(self):
-        t = StartThread(target=self.listen, args=())
-        self.thready.append(t)
-        t.start()
+        self.thread.start()
+        # t = StartThread(target=self.listen, args=())
+        # self.thready.append(t)
+        # t.start()
 
     def quitApp(self):
         self.start_button.setDisabled(True)
         self.pause_button.setDisabled(True)
         self.print_to_user("Bye...")
-        self.thready[0].stop()
+        # self.thready[0].join()
         self.close()
         exit(0)
 
     def print_to_user(self, message):
         self.messages += ('\n' + message)
         self.label.setText(self.messages)
-        print(message)
+        self.label.update()
+        # print(message)
 
-    def listen(self):
+    # def listen(self):
+    #     res = controller.readUserCommand()
+    #     while res != ['exit'] and not self.quit:
+    #         self.print_to_user("Your Command: " + res.__str__())
+    #         res = controller.readUserCommand()
+    #     self.quit = True
+    #     self.quitApp()
+
+
+class Worker(QThread):
+    signal = pyqtSignal('PyQt_PyObject')
+
+    def __init__(self):
+        QThread.__init__(self)
+        self.quit = False
+
+    def run(self):
         res = controller.readUserCommand()
-        if res[0]['transcript'] != ['exit']:
-            self.print_to_user("Your Command: " + res[0]['transcript'])
-            self.listen()
-        self.quitApp()
+        while res != ['exit'] and not self.quit:
+            ChessUI.print_to_user(interface, "Your Command: " + res.__str__())
+            res = controller.readUserCommand()
+        return
+
+
 
 
 global app

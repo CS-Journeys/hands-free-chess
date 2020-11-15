@@ -101,4 +101,4 @@ def get_voice_commands():
         print("Google API response: " + str(recognition_guesses))
         print("********\n")
         
-    return user_input, recognition_guesses
+    return user_input

@@ -60,16 +60,16 @@ BOARD_CHECK_PAUSE_TIME = 1.5  # time (in seconds) to wait before rechecking for 
 #     return 'exit'
 
 
-def setup():
+def setup(interface):
     # Adjust microphone for ambient noise
     cmd_recog.adjust_for_ambient_noise(2.0)
-    ui.print_to_user("Listening. What's your move?")
+    interface.print_to_user("Listening. What's your move?")
 
 
 board_data = np.full((8, 8), 'unknown')
 def readUserCommand():
     user_command = []
-    commands, recog = cmd_recog.get_voice_commands()
+    commands = cmd_recog.get_voice_commands()
     user_command.extend(commands)
 
     # Proceed if command contains at least 3 parts (minimum num for a valid cmd)
@@ -102,7 +102,7 @@ def readUserCommand():
         formatted_board_data = format_board_matrix(board_data)
         print(formatted_board_data)
 
-    return recog
+    return commands
 
 
 
