@@ -14,23 +14,21 @@
 #     command[4] is the destination number (1-8)
 #
 # board_data is a 8x8 numpy array
-#   each element is a ChessPiece object
+#   each element is a ChessPiece object that contains name and color
 #
 # user_color is a string
 #   either "black" or "white"
-#
 ######################################################################
 
 import numpy as np
 
-
 UNDETERMINED_POSITION = (-1, -1)
 AMBIGUOUS_POSITION = (-2, -2)
 
-def is_legal_move(command, board_data, user_color):
+def is_legal_move(command, user_color, board_data):
     is_legal = False
-    initial_position = get_initial_position(command, board_data, user_color)
-    final_position = get_final_position(command, board_data)
+    initial_position = get_initial_position(command, user_color, board_data)
+    final_position = get_final_position(command, user_color, board_data)
     piece = board_data[initial_position[1], initial_position[0]]
     
     if (piece.name == extract_piece_name(command)
@@ -40,27 +38,27 @@ def is_legal_move(command, board_data, user_color):
 
     return is_legal
 
-def is_ambiguous_move(command, board_data, user_color):
+def is_ambiguous_move(command, user_color, board_data):
     is_ambiguous = False
-    initial_position = get_initial_position(command, board_data, user_color)
+    initial_position = get_initial_position(command, user_color, board_data)
     if initial_position == AMBIGUOUS_POSITION:
         is_ambiguous = True
     return is_ambiguous
 
-def get_initial_position(command, board_data, user_color):
+def get_initial_position(command, user_color, board_data):
     initial_position = UNDETERMINED_POSITION
 
     # explicit starting position structure
     if (len(command) == 5): 
-        initial_position = _alphanum_to_indices(command[0], int(command[1]))
-        
+        initial_position = _alphanum_to_indices(command[0], int(command[1]), user_color)
+    
     # implicit starting position structure
     else:
         # set initial position to the position of the only piece of the given type
         # that can be moved to the final position as declared by the command
         num_movable_pieces = 0
         command_piece_name = command[0]
-        final_position = get_final_position(command, board_data)
+        final_position = get_final_position(command, user_color, board_data)
         for row in range(0, 8):
             for col in range(0, 8):
                 board_piece = board_data[row,col]
@@ -76,8 +74,8 @@ def get_initial_position(command, board_data, user_color):
             
     return (initial_position)
 
-def get_final_position(command, board_data):
-    final_position = _alphanum_to_indices(command[-2], int(command[-1]))
+def get_final_position(command, user_color, board_data):
+    final_position = _alphanum_to_indices(command[-2], int(command[-1]), user_color)
     return final_position
 
 def extract_piece_name(command):
@@ -89,7 +87,13 @@ def extract_piece_name(command):
 
 
 ### Private Functions ###
-def _alphanum_to_indices(alpha, num):
-    col = 7 - (ord(alpha) - 97) # correct column position if user is black
-    row = num - 1               # correct row position if user is black
+def _alphanum_to_indices(alpha, num, piece_color):
+    if piece_color=='black':
+        col = 8 - (ord(alpha) - 97) # correct column position if user is black
+        row = num - 1               # correct row position if user is black
+    else:
+        col = ord(alpha) - 96       # correct column position if user is white
+        row = (num - 8)*-1          # correct row position if user is white
     return (col, row)
+
+    

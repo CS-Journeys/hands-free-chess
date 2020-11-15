@@ -57,7 +57,6 @@ def gather_input(s):
             result[i] = "f"
     if result[0] == "9" and result[1].isdigit(): # ninety-four means Knight E4
         result = ["knight", "e", result[1]]
-
     if (is_valid(result)):
         return result
     else:
@@ -83,11 +82,12 @@ def get_voice_commands():
         print("No speech detected\n********\n")
 
     if (speech_detected):
+
+        print(recognition_guesses)
         
         # Get keywords from first (and most likely correct) guess
         first_guess = recognition_guesses[0]['transcript'].lower()
         user_input = gather_input(first_guess)
-
         # If first guess is not valid input,
         # check if remainding guesses are valid
         if (user_input == []):

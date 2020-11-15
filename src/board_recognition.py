@@ -50,7 +50,6 @@ def get_board_coords():
     pixelRow = int(SCREEN_SCALAR / 4) # don't start scanning at 0th pixel to save time
     while (columnsNotDetected and pixelRow < SCREEN_SCALAR):
         scaled_col_coords = []
-        pixelRow += 1
 
         # Scan single pixel row for column pattern
         previousPixel = -1
@@ -85,6 +84,8 @@ def get_board_coords():
             scaled_col_coords.insert(0, scaled_col_coords[0] - grid_width)
             scaled_col_coords.append(scaled_col_coords[len(scaled_col_coords) - 1] + grid_width)
             columnsNotDetected = False
+
+        pixelRow += 1
 
     if (pixelRow >= SCREEN_SCALAR):
         print("chessboard columns not detected")
@@ -183,13 +184,13 @@ def identify_piece(col, row):
 
     # Initialize variables for finding closest resemblence
     min_img_difference = mse(screen_piece_img, chess_pieces[0].img[tile_color])
-    piece_name = chess_pieces[0].name
+    piece = chess_pieces[0]
     
     # Loop through chess pieces
     for reference_piece in chess_pieces:
         current_img_difference = mse(screen_piece_img, reference_piece.img[tile_color])
         if current_img_difference < min_img_difference:
             min_img_difference = current_img_difference
-            piece_name = reference_piece.name
+            piece = reference_piece
 
-    return piece_name
+    return piece
