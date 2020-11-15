@@ -26,11 +26,11 @@ def is_legal_move(command, board_data):
     # FIX ME
     return True
 
-def get_initial_position(command, board_data):
+def get_initial_position(command, piece_color, board_data):
     initial_position = (-1, -1)
     
     if (len(command) == 5): # explicit starting position structure
-        initial_position = _alphanum_to_indices(command[0], int(command[1]))
+        initial_position = _alphanum_to_indices(command[0], int(command[1]), piece_color)
         
     else:                   # implicit starting position structure
         # TO-DO: figure out initial position based on which piece can legally
@@ -39,15 +39,19 @@ def get_initial_position(command, board_data):
     
     return (initial_position)
 
-def get_final_position(command, board_data):
-    final_position = _alphanum_to_indices(command[-2], int(command[-1]))
+def get_final_position(command, piece_color, board_data):
+    final_position = _alphanum_to_indices(command[-2], int(command[-1]), piece_color)
     return final_position
 
 
 ### Private Functions ###
-def _alphanum_to_indices(alpha, num):
-    col = 8 - (ord(alpha) - 97) # correct column position if user is black
-    row = num - 1               # correct row position if user is black
+def _alphanum_to_indices(alpha, num, piece_color):
+    if piece_color=='black':
+        col = 8 - (ord(alpha) - 97) # correct column position if user is black
+        row = num - 1               # correct row position if user is black
+    else:
+        col = ord(alpha) - 96       # correct column position if user is white
+        row = (num - 8)*-1          # correct row position if user is white
     return (col, row)
 
     
