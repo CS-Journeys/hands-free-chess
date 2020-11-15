@@ -23,7 +23,6 @@
 
 import numpy as np
 
-from chess_piece import ChessPiece
 
 UNDETERMINED_POSITION = (-1, -1)
 AMBIGUOUS_POSITION = (-2, -2)
