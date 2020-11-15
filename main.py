@@ -15,7 +15,7 @@ def main():
     # Variable initialization
     board_data = np.full((8,8), chess_piece.ChessPiece('unknown', 'unknown'))
     user_command = []
-    piece_color = []
+    user_color = []
 
     # Adjust microphone for ambient noise
     ui.print_to_user("Please wait...")
@@ -25,7 +25,7 @@ def main():
     ui.print_to_user("Listening. What's your piece color?")
     while user_command != ['white'] and user_command != ['black']: 
         user_command = cmd_recog.get_voice_commands()
-    piece_color = user_command[0]
+    user_color = user_command[0]
     
     user_command = []
     ui.print_to_user("Listening. What's your move?")
@@ -48,15 +48,27 @@ def main():
             for row in range(1, 8+1):
                 for col in range(1, 8+1):
                     board_data[row-1][col-1] = b_recog.identify_piece(col,row)
-
+            
+            # Notify user if move is ambiguous
+            if (b_manager.is_ambiguous_move(user_command, user_color, board_data)):
+                ui.print_to_user("Ambiguous move. Please repeat and specify which "
+                                 + str(b_manager.extract_piece_name(user_command))
+                                 + " you want to move.")
+                
+            # If move is legal and unambiguous, move piece with mouse
+            elif (b_manager.is_legal_move(user_command, user_color, board_data)):
+                initial_position = b_manager.get_initial_position(user_command, user_color, board_data)
+                final_position = b_manager.get_final_position(user_command, user_color, board_data)
+                
             # If move is legal, move piece with mouse
             if (b_manager.is_legal_move(user_command, board_data)):
-                initial_position = b_manager.get_initial_position(user_command, piece_color, board_data)
-                final_position = b_manager.get_final_position(user_command, piece_color, board_data)
+                initial_position = b_manager.get_initial_position(user_command, user_color, board_data)
+                final_position = b_manager.get_final_position(user_command, user_color, board_data)
                 mouse_controller.move_piece(initial_position, final_position, board_coords)
+                
+            # Notify user if move is illegal
             else:
                 ui.print_to_user("Illegal move! Try again.")
-                pass
 
             # TO-DO: check for game over
 
