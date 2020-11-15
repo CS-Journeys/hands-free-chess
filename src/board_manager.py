@@ -89,11 +89,9 @@ def extract_piece_name(command):
 ### Private Functions ###
 def _alphanum_to_indices(alpha, num, piece_color):
     if piece_color=='black':
-        col = 8 - (ord(alpha) - 97) # correct column position if user is black
+        col = 7 - (ord(alpha) - 97) # correct column position if user is black
         row = num - 1               # correct row position if user is black
     else:
-        col = ord(alpha) - 96       # correct column position if user is white
+        col = ord(alpha) - 97       # correct column position if user is white
         row = (num - 8)*-1          # correct row position if user is white
     return (col, row)
-
-    
