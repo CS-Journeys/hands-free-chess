@@ -140,7 +140,7 @@ def get_voice_commands():
 
         # If, after having checked all guesses by the API, user_input is still not uniquely comprised of keywords,
         # then set user_input to an empty array.
-        # The empty array means that the user did exclusively say any words that were understood by our dictionary
+        # The empty array means that the user did not exclusively say words that were understood by our dictionary
         if (not _is_comprised_of_keywords(user_input)):
             user_input = []
 
