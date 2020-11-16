@@ -122,9 +122,6 @@ def get_voice_commands():
 
     # Process Google Speech API results if the API returned something to process
     if (speech_detected):
-
-        # DELETE ME (helpful for debugging)
-        print(recognition_guesses)
         
         # Get keywords from first (and most likely correct) guess
         first_guess = recognition_guesses[0]['transcript'].lower()
@@ -147,8 +144,8 @@ def get_voice_commands():
         if (not _is_comprised_of_keywords(user_input)):
             user_input = []
 
-        print(user_input)
         print("Google API response: " + str(recognition_guesses))
+        print("User input: " + str(user_input) + "\n")
         print("********\n")
         
     return user_input
