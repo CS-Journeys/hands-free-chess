@@ -12,7 +12,7 @@ Play chess online using only your voice instead of a keyboard and mouse!
 ## Usage
 Begin chess game on [chess.com](https://www.chess.com)
 
-Run ```py main.py``` or ```python main.py``` via the command line
+Run ```py app.py``` or ```python app.py``` via the command line
 
 Say a single or combination of [keywords](res/keywords.txt)
 
