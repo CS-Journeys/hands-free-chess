@@ -5,6 +5,7 @@ bishop
 knight
 rook
 pawn
+to
 1
 2
 3
@@ -21,3 +22,5 @@ e
 f
 g
 h
+black
+white

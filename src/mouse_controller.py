@@ -28,5 +28,5 @@ def move_piece(start, end, board_coords):
     y_end = round((board_coords[1][end[1]] + board_coords[1][end[1]+1]) / 2)
     
     pyautogui.click(x_start, y_start)
-    pyautogui.click(x_end, y_end)
+    pyautogui.dragTo(x_end, y_end, button='left')
 

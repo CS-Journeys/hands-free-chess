@@ -114,10 +114,13 @@ class Worker(QThread):
         self.quit = False
 
     def run(self):
-        res = controller.readUserCommand()
+        color = controller.ask_for_color(interface)
+        ChessUI.print_to_user(interface, "Your color: " + color)
+        ChessUI.print_to_user(interface, "Listening. What's your move?")
+        res = controller.handle_user_command(interface)
         while res != ['exit'] and not self.quit:
-            ChessUI.print_to_user(interface, "Your Command: " + res.__str__())
-            res = controller.readUserCommand()
+            ChessUI.print_to_user(interface, "Your Command: " + str(res))
+            res = controller.handle_user_command(interface)
         return
 
 
@@ -137,4 +140,4 @@ def print_to_user(message):
 if __name__ == "__main__":
     interface.print_to_user('Click \"Start\" to begin.')
 
-    sys.exit(app.exec_())
+    #sys.exit(app.exec_())
