@@ -10,6 +10,7 @@ from src import chess_piece
 
 BOARD_CHECK_PAUSE_TIME = 1.5 # time (in seconds) to wait before rechecking for board
 
+
 def main():
 
     # Variable initialization
@@ -24,7 +25,7 @@ def main():
     # Listen for color until a valid piece color is provided - black or white
     ui.print_to_user("Listening. What's your piece color?")
     while user_command != ['white'] and user_command != ['black']: 
-        user_command = cmd_recog.get_voice_commands()
+        user_command = cmd_recog.get_voice_command()
     user_color = user_command[0]
     
     user_command = []
@@ -32,7 +33,7 @@ def main():
     
     # Main loop (CTRL + C To Exit)
     while user_command != ['exit']:
-        user_command.extend(cmd_recog.get_voice_commands())
+        user_command = cmd_recog.get_voice_command()
 
         # Proceed if command contains at least 3 parts (minimum num for a valid cmd)
         if (len(user_command) >= 3):
@@ -70,9 +71,6 @@ def main():
             # DELETE ME (this is just for debugging)
             formatted_board_data = format_board_matrix(board_data)
             print(formatted_board_data)
-
-            # Reset command before the next iteration
-            user_command = []
             
 
 # Useful helper function for aesthetic debugging <3, delete later
