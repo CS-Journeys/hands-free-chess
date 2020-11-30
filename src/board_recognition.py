@@ -1,6 +1,5 @@
 from PIL import ImageGrab
 import numpy as np
-import matplotlib.pyplot as plt
 import cv2
 import pyautogui
 from sklearn.neighbors.kde import KernelDensity
