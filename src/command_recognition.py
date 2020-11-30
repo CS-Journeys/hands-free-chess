@@ -103,7 +103,7 @@ def adjust_for_ambient_noise(sample_duration):
 # Return      : an array of strings
 # Example     : If the user says "Knight G4", the function returns ["knight", "g", "4"]
 # TO-DO       : If the user says "Knight to G4", the function should still return ["knight", "g", "4"]
-def get_voice_commands():
+def get_voice_command():
     user_input = [] # user_input will contain the keywords that the user spoke
 
     # Listen to audio with microphone
