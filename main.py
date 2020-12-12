@@ -16,7 +16,6 @@ def main():
     # Variable initialization
     board_data = np.full((8,8), chess_piece.ChessPiece('unknown', 'unknown'))
     user_command = []
-    user_color = []
 
     # Adjust microphone for ambient noise
     ui.print_to_user("Please wait...")
@@ -36,11 +35,11 @@ def main():
         user_command = cmd_recog.get_voice_command()
 
         # Proceed if command contains at least 3 parts (minimum num for a valid cmd)
-        if (len(user_command) >= 3):
+        if len(user_command) >= 3:
             board_coords = b_recog.get_board_coords()
 
             # If board not detected, loop until board is detected
-            while (board_coords == None):
+            while board_coords is None:
                 ui.print_to_user("Board not detected. Searching again.")
                 time.sleep(BOARD_CHECK_PAUSE_TIME)
                 board_coords = b_recog.get_board_coords()
@@ -51,13 +50,13 @@ def main():
                     board_data[row-1][col-1] = b_recog.identify_piece(col,row)
             
             # Notify user if move is ambiguous
-            if (b_manager.is_ambiguous_move(user_command, user_color, board_data)):
+            if b_manager.is_ambiguous_move(user_command, user_color, board_data):
                 ui.print_to_user("Ambiguous move. Please repeat and specify which "
                                  + str(b_manager.extract_piece_name(user_command))
                                  + " you want to move.")
                 
             # If move is legal and unambiguous, move piece with mouse
-            elif (b_manager.is_legal_move(user_command, user_color, board_data)):
+            elif b_manager.is_legal_move(user_command, user_color, board_data):
                 initial_position = b_manager.get_initial_position(user_command, user_color, board_data)
                 final_position = b_manager.get_final_position(user_command, user_color, board_data)
                 mouse_controller.move_piece(initial_position, final_position, board_coords)
@@ -77,12 +76,14 @@ def main():
 def format_board_matrix(board_matrix):
     for i in range(0, board_matrix.shape[0]):
         for j in range(0, board_matrix.shape[1]):
-            if board_matrix[i,j] == "king":
+            if board_matrix[i,j].name == "king":
                 board_matrix[i,j] = "K"
-            if board_matrix[i,j] == "empty":
+            elif board_matrix[i,j].name == "empty":
                 board_matrix[i,j] = " "
-            board_matrix[i,j] = board_matrix[i,j].name[0]
+            else:
+                board_matrix[i,j] = board_matrix[i,j].name[0]
     return board_matrix
+
 
 if __name__ == "__main__":
     main()
