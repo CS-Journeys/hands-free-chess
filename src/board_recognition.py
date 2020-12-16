@@ -2,7 +2,7 @@ from PIL import ImageGrab
 import numpy as np
 import cv2
 import pyautogui
-from sklearn.neighbors.kde import KernelDensity
+from sklearn.neighbors import KernelDensity
 from scipy.signal import argrelextrema
 
 from src import chess_piece
