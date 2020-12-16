@@ -94,7 +94,7 @@ def get_board_coords():
                 chessboard_size = cluster[checker_pattern_start_index+7].start_pixel - cluster[checker_pattern_start_index].start_pixel
                 chessboard_size = chessboard_size + (chessboard_size / 7) + 1
 
-                # TO-DO: Programmatically fix this size bug instead of
+                # TODO: Programmatically fix this size bug instead of
                 #        hardcoding a specific value
                 chessboard_size -= 2
                 break

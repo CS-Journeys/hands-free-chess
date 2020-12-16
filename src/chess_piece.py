@@ -1,4 +1,4 @@
-# Defintion of first and second diagonals of a square matrix:
+# Definition of first and second diagonals of a square matrix:
 #      a - - - b
 #      - a - b -   The 'a's represent the first diagonal
 #      - - * - -   The 'b's represent the second diagonal
@@ -10,6 +10,7 @@ import numpy as np
 from PIL import Image
 
 IMG_FILEPATH = 'res/chess-piece-images/'
+
 
 class ChessPiece:
     ######################################################################
@@ -73,7 +74,7 @@ class ChessPiece:
             # move by more than 1 row
             if abs(current_pos[1] - next_pos[1]) > 1:
                 is_legal = False
-            # TO-DO: add support for castling
+            # TODO: add support for castling. See http://www.learnchessrules.com/castling.htm
 
         # QUEEN
         elif self.name == 'queen':
@@ -100,7 +101,7 @@ class ChessPiece:
         # PAWN
         elif self.name == 'pawn':
             # not vertical move
-            if (not _on_vertical_line(sorted_columns)):
+            if not _on_vertical_line(sorted_columns):
                 is_legal = False
             # move forward by 2, but...
             if current_pos[1] - next_pos[1] == 2:
@@ -113,8 +114,8 @@ class ChessPiece:
             # neither a move by 1 nor 2 spots forward
             elif current_pos[1] - next_pos[1] != 1:
                 is_legal = False
-        # TO-DO: add support for pawn attacks (diagonal move)
-        # TO-DO: add support for 'en passant'
+        # TODO: add support for pawn attacks (diagonal move)
+        # TODO: add support for 'en passant'. See http://www.learnchessrules.com/enpass.htm
 
         # ROOK
         elif self.name == 'rook':
@@ -132,17 +133,17 @@ class ChessPiece:
 
         # KNIGHT
         elif self.name == 'knight':
-            deltaCol = current_pos[0] - next_pos[0]
-            deltaRow = current_pos[1] - next_pos[1]
+            delta_col = current_pos[0] - next_pos[0]
+            delta_row = current_pos[1] - next_pos[1]
             # not an L-shaped move
-            if not ((deltaCol == 2 and deltaRow == 1)
-                    or (deltaCol == 2 and deltaRow == -1)
-                    or (deltaCol == 1 and deltaRow == 2)
-                    or (deltaCol == 1 and deltaRow == -2)
-                    or (deltaCol == -1 and deltaRow == 2)
-                    or (deltaCol == -1 and deltaRow == -2)
-                    or (deltaCol == -2 and deltaRow == 1)
-                    or (deltaCol == -2 and deltaRow == -1)):
+            if not ((delta_col == 2 and delta_row == 1)
+                    or (delta_col == 2 and delta_row == -1)
+                    or (delta_col == 1 and delta_row == 2)
+                    or (delta_col == 1 and delta_row == -2)
+                    or (delta_col == -1 and delta_row == 2)
+                    or (delta_col == -1 and delta_row == -2)
+                    or (delta_col == -2 and delta_row == 1)
+                    or (delta_col == -2 and delta_row == -1)):
                 is_legal = False
 
         # BISHOP
