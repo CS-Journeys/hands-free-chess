@@ -30,10 +30,37 @@ mic = sr.Microphone()
 # Return      : False if any string in array is not listed in keywords file
 #               True if all strings in the array are listed in keywords file
 def _is_comprised_of_keywords(words_array):
+    digitCount = 0
+    letterCount = 0
+    nonKeyCount = 0
+
+    validWord = True
+    prevWord = ''
+
     for word in words_array:
+        #Check for unrecognized words
         if word not in keywords:
-            return False
-    return True
+            nonKeyCount += 1
+
+        #Check for letter tile input
+        if (word.isalpha() and len(word) < 2):
+            if (word == prevWord):
+                validWord = False
+
+            prevWord = word
+            letterCount += 1
+
+        #Check for digit input
+        if (word.isdigit() and len(word) < 3):
+            digitCount += 1
+        
+    #Check for valid letters, digits, and key words
+    if (nonKeyCount > 0 or letterCount != 2 or digitCount != 2):
+        validWord = False
+    
+    #Input should always have at least [letter 1, digit 1, letter 2, digit 2]
+    #Letters should always be different
+    return validWord
 
 
 #############################################################################
@@ -142,6 +169,7 @@ def get_voice_command():
         # then set user_input to an empty array.
         # The empty array means that the user did not exclusively say words that were understood by our dictionary
         if (not _is_comprised_of_keywords(user_input)):
+            print('Input Not Valid')
             user_input = []
 
         print("Google API response: " + str(recognition_guesses))
