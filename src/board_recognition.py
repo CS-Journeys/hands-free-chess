@@ -7,7 +7,7 @@ from scipy.signal import argrelextrema
 
 from src import chess_piece
 
-''' CUSTOM DATA TYPES '''
+""" CUSTOM DATA TYPES """
 # A ConsecutivePixelColorSequence (cpcs) is a set of consecutive pixels
 # in a row that have the same color value.
 # Each cpcs has a color, start index, and length.
@@ -17,10 +17,11 @@ class ConsecutivePixelColorSequence:
         self.start_pixel = start_pixel
         self.length = length
 
-''' CONSTANTS '''
-SCREEN_WIDTH  = pyautogui.size()[0]
+
+""" CONSTANTS """
+SCREEN_WIDTH = pyautogui.size()[0]
 SCREEN_HEIGHT = pyautogui.size()[1]
-SCREEN_RATIO  = SCREEN_WIDTH / SCREEN_HEIGHT
+SCREEN_RATIO = SCREEN_WIDTH / SCREEN_HEIGHT
 SCALED_HEIGHT = 720 # arbitrary scaled down resolution to reduce computation time
 REFERENCE_IMG_DIM = 33 # width and height in pixels
 CHESS_PIECES = [chess_piece.ChessPiece('pawn', 'black'),
@@ -37,14 +38,13 @@ CHESS_PIECES = [chess_piece.ChessPiece('pawn', 'black'),
                 chess_piece.ChessPiece('king', 'white'),
                 chess_piece.ChessPiece('empty', 'empty')]
 
-''' GLOBAL VARIABLES '''
+""" GLOBAL VARIABLES """
 scaled_col_coords = []
 scaled_row_coords = []
 frame = None
 
 
-''' PUBLIC FUNCTIONS '''
-
+""" PUBLIC FUNCTIONS """
 # description  : Find the chessboard and its coordinates on the screen
 # return       : two lists of floats
 # precondition : None
@@ -55,7 +55,7 @@ def get_board_coords():
     global frame, scaled_row_coords, scaled_col_coords
 
     frame = _get_processed_screenshot()
-    ss_width  = frame.shape[1] #ss is short for screenshot
+    ss_width = frame.shape[1] # ss is short for screenshot
     ss_height = frame.shape[0]
     scaled_row_coords = []
     scaled_col_coords = []
@@ -95,13 +95,12 @@ def get_board_coords():
                 chessboard_size = chessboard_size + (chessboard_size / 7) + 1
 
                 # TODO: Programmatically fix this size bug instead of
-                #        hardcoding a specific value
+                #        hard-coding a specific value
                 chessboard_size -= 2
                 break
         
         i += 1
 
-    
     # FIND ROW COORDINATES
     if col_coords_are_found:
         row_coords_are_found = False
@@ -137,7 +136,6 @@ def get_board_coords():
             
             i += 1
 
-    
     # Set the coordinates of every grid line based on the chessboard's
     # leftmost and upmost pixels as well as the board's size
     if col_coords_are_found and row_coords_are_found:
@@ -165,7 +163,7 @@ def get_board_coords():
 
 # description  : Identify the chess piece at a given location on the board
 # return       : ChessPiece
-# precondition : get_board_coords() was executed and succesfully located the board,
+# precondition : get_board_coords() was executed and successfully located the board,
 #                col and row are integers
 # postcondition: The ChessPiece object which corresponds to the specified location on
 #                the board is returned. Note that an empty tile is a type of ChessPiece.
@@ -198,12 +196,12 @@ def identify_piece(col, row):
                                   interpolation=cv2.INTER_CUBIC)
 
     # Set color of piece's tile
-    if ((col + row) % 2 == 0):
+    if (col + row) % 2 == 0:
         tile_color = 1 # white
     else:
         tile_color = 0 # black
 
-    # Initialize variables for finding closest resemblence
+    # Initialize variables for finding closest resemblance
     min_img_difference = _mse(screen_piece_img, CHESS_PIECES[0].img[tile_color])
     piece = CHESS_PIECES[0]
     
@@ -217,8 +215,7 @@ def identify_piece(col, row):
     return piece
 
 
-''' PRIVATE FUNCTIONS '''
-
+""" PRIVATE FUNCTIONS """
 # description  : Take a screenshot and optimize it for image recognition
 # return       : 2D numpy array
 # precondition : SCREEN_WIDTH and SCREEN_HEIGHT have been correctly initialized
@@ -239,10 +236,10 @@ def _get_processed_screenshot():
 # return       : float
 # precondition : the two images must have the same dimension
 # postcondition: the mse is returned
-def _mse(imageA, imageB): 
-	err = np.sum((imageA.astype("float") - imageB.astype("float")) ** 2)
-	err /= float(imageA.shape[0] * imageA.shape[1])
-	return err
+def _mse(image_a, image_b):
+    err = np.sum((image_a.astype("float") - image_b.astype("float")) ** 2)
+    err /= float(image_a.shape[0] * image_a.shape[1])
+    return err
 
 
 # description  : Cluster an array of objects based on a linked array of values
@@ -259,8 +256,6 @@ def _cluster_objects(object_array, value_array):
     e = kde.score_samples(s.reshape(-1,1))
     minima = argrelextrema(e, np.less)[0]
     minima = np.append(minima, round(SCALED_HEIGHT/8) - 1)
-    #debugging
-    #print("Minima:", s[minima])
 
     # Generate array of 'minima' number of arrays
     clusters = []
@@ -293,21 +288,21 @@ def _find_cpcs_checker_pattern(cpcs_array):
     checker_pattern_is_found = False
     while i < len(cpcs_array) and not checker_pattern_is_found:
         if i == 0:
-            colorA = cpcs_array[i].color
+            color_a = cpcs_array[i].color
         elif i == 1:
-            colorB = colorA
-            colorA = cpcs_array[i].color
+            color_b = color_a
+            color_a = cpcs_array[i].color
             checker_pattern_counter = 2
         else:
-            if cpcs_array[i].color == colorB and colorA != colorB:
+            if cpcs_array[i].color == color_b and color_a != color_b:
                 checker_pattern_counter += 1
                 if checker_pattern_counter == 8:
                     checker_pattern_is_found = True
             else:
                 checker_pattern_counter = 2
                 pattern_start_index = i - 1
-            colorB = colorA
-            colorA = cpcs_array[i].color
+            color_b = color_a
+            color_a = cpcs_array[i].color
         i += 1
     
     if not checker_pattern_is_found:
