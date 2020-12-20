@@ -16,6 +16,7 @@
 ######################################################################
 
 import pyautogui
+import logging
 
 def move_piece(start, end, board_coords):
     # Define the actual coordinates for the mouse. Rounded just in case partial pixels are frowned upon.
@@ -26,7 +27,9 @@ def move_piece(start, end, board_coords):
 
     x_end = round((board_coords[0][end[0]] + board_coords[0][end[0]+1]) / 2)
     y_end = round((board_coords[1][end[1]] + board_coords[1][end[1]+1]) / 2)
-    
+
     pyautogui.click(x_start, y_start)
     pyautogui.dragTo(x_end, y_end, button='left')
 
+    log = logging.getLogger(__name__)
+    log.debug(f"Moved mouse from ({x_start}, {y_start}) to ({x_end},{y_end})")

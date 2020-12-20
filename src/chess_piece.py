@@ -6,6 +6,7 @@
 #      b - - - a
 # 
 
+import logging
 import numpy as np
 from PIL import Image
 
@@ -15,55 +16,67 @@ IMG_FILEPATH = 'res/chess-piece-images/'
 class ChessPiece:
     ######################################################################
     # ChessPiece constructor
-    def __init__(self, name, color = 'empty'):
+    def __init__(self, name, color='empty'):
+        self.log = logging.getLogger(__name__)
         self.name = name
         self.color = color
         if self.name != 'unknown':
             self.img_onblack_fname = name + '-' + color + '-black.png'
             self.img_onwhite_fname = name + '-' + color + '-white.png'
-            self.img = [np.array(Image.open(IMG_FILEPATH + self.img_onblack_fname)),
-                        np.array(Image.open(IMG_FILEPATH + self.img_onwhite_fname))]
+            try:
+                self.img = [np.array(Image.open(IMG_FILEPATH + self.img_onblack_fname)),
+                            np.array(Image.open(IMG_FILEPATH + self.img_onwhite_fname))]
+            except FileNotFoundError:
+                self.log.error(f"Unable to find the {self.name}'s images.", exc_info=True)
 
-    ######################################################################
-    # description : Determine if this piece can be moved from
-    #               point A to point B given the current state of the board
-    # parameters  : the piece's current position in the form (column, row),
-    #               the piece's destination position in the form (column, row),
-    #               and the 8x8 matrix of ChessPiece objects
-    # return      : If this piece can be moved from its current position to its next position,
-    #               then return True,
-    #               else, return False.
-    # example     : current_pos is (0,0), next_pos is (7,7), and the board
-    #               looks like this:
-    #                0 1 2 3 4 5 6 7
-    #               +----------------+
-    #             0 |wq              |    wq: white queen
-    #             1 |                |    wk: white king
-    #             2 |          bk    |    bq: black queen
-    #             3 |                |    bk: black king
-    #             4 |                |    br: black rook
-    #             5 |                |
-    #             6 |            wk  |
-    #             7 |  bq          br|
-    #               +----------------+
-    #               self.name is "queen" and self.color is "white"
-    #               => the function will return False because
-    #                  the white king is blocking the white queen
-    #                  from moving to (7,7) and capturing the black rook
     def can_be_moved(self, current_pos, next_pos, board_data):
+        # description : Determine if this piece can be moved from
+        #               point A to point B given the current state of the board
+        # parameters  : the piece's current position in the form (column, row),
+        #               the piece's destination position in the form (column, row),
+        #               and the 8x8 matrix of ChessPiece objects
+        # return      : If this piece can be moved from its current position to its next position,
+        #               then return True,
+        #               else, return False.
+        # example     : current_pos is (0,0), next_pos is (7,7), and the board
+        #               looks like this:
+        #                 0  1  2  3  4  5  6  7
+        #               +-------------------------+
+        #             0 | wq                      |    wq: white queen
+        #             1 |                         |    wk: white king
+        #             2 |                bk       |    bq: black queen
+        #             3 |                         |    bk: black king
+        #             4 |                         |    br: black rook
+        #             5 |                         |
+        #             6 |                   wk    |
+        #             7 |    bq                br |
+        #               +-------------------------+
+        #               self.name is "queen" and self.color is "white"
+        #               => the function will return False because
+        #                  the white king is blocking the white queen
+        #                  from moving to (7,7) and capturing the black rook
+        ######################################################################
+        self.log.debug(f"Started determining if {self.color} {self.name} @ {current_pos} can move to {next_pos}")
+
         is_legal = True
+        general_rule_failure = False
 
         # Rules that apply to all types of pieces
         if current_pos == next_pos:
             is_legal = False # can't "move" by not moving
         if board_data[next_pos[1], next_pos[0]].color == self.color:
             is_legal = False # can't move to spot occupied by piece of same color
+        if not is_legal:
+            general_rule_failure = True
+            self.log.debug(f"General rule failure")
 
         # Useful variables for helping to determine if a piece is in the way
         sorted_rows = [current_pos[1], next_pos[1]]
         sorted_rows.sort()
         sorted_columns = [current_pos[0], next_pos[0]]
         sorted_columns.sort()
+        self.log.debug(f"Sorted rows: {sorted_rows}")
+        self.log.debug(f"Sorted columns: {sorted_columns}")
 
         # Rules specific to each type of piece
         # KING
@@ -160,29 +173,32 @@ class ChessPiece:
             else:
                 is_legal = False
 
+        if not general_rule_failure and not is_legal:
+            self.log.debug(f"{self.name} rule failure")
+
+        self.log.debug(f"Legal move: {is_legal}")
         return is_legal
 
-    
 
 # Functions to help with rules for each type of chess piece
 ######################################################################
 # description: determine if given column indices are the same
 def _on_vertical_line(cols):
-    return (cols[0] == cols[1])
+    return cols[0] == cols[1]
 
 # description: determine if given row indices are the same
 def _on_horizontal_line(rows):
-    return (rows[0] == rows[1])
+    return rows[0] == rows[1]
 
 # description: determine if given coordinates are in a diagonal of type "first"
 # note: see top of file
 def _on_first_diagonal(coords1, coords2):
-    return (coords1[0] - coords2[0] == coords1[1] - coords2[1])
+    return coords1[0] - coords2[0] == coords1[1] - coords2[1]
 
 # description: determine if given coordinates are in a diagonal of type "second"
 # note: see top of file
 def _on_second_diagonal(coords1, coords2):
-    return (coords1[0] - coords2[0] == coords2[1] - coords1[1])
+    return coords1[0] - coords2[0] == coords2[1] - coords1[1]
 
 # description: determine if a piece is between two vertically aligned coordinates
 def _vertical_is_blocked(column, sorted_rows, board_data):
@@ -213,5 +229,5 @@ def _second_diagonal_is_blocked(sorted_rows, sorted_columns, board_data):
     is_blocked = False
     for i in range(1, sorted_rows[1] - sorted_rows[0]):
         if board_data[sorted_rows[1] - i, sorted_columns[0] + i].name != 'empty':
-            is_legal = False
+            is_blocked = True
     return is_blocked
