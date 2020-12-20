@@ -1,6 +1,7 @@
 import numpy as np
 import time
 
+from app import ChessUI
 from src import command_recognition as cmd_recog
 from src import board_recognition as b_recog
 from src import board_manager as b_manager
@@ -20,7 +21,7 @@ def setup(ui):
 def ask_for_color(ui):
     global user_color
     # Listen for color until a valid piece color is provided - black or white
-    ui.print_to_user("Listening. What's your piece color?")
+    ChessUI.print_to_user(ui, "Listening. What's your piece color?")
     user_command = cmd_recog.get_voice_command()
     while user_command != ['white'] and user_command != ['black']: 
         user_command = cmd_recog.get_voice_command()
@@ -37,7 +38,7 @@ def handle_user_command(ui):
 
         # If board not detected, loop until board is detected
         while (board_coords == None):
-            ui.print_to_user("Board not detected. Searching again.")
+            ChessUI.print_to_user(ui, "Board not detected. Searching again.")
             time.sleep(BOARD_CHECK_PAUSE_TIME)
             board_coords = b_recog.get_board_coords()
         
@@ -48,7 +49,7 @@ def handle_user_command(ui):
 
         # Notify user if move is ambiguous
         if (b_manager.is_ambiguous_move(user_command, user_color, board_data)):
-            ui.print_to_user("Ambiguous move. Please repeat and specify which "
+            ChessUI.print_to_user(ui, "Ambiguous move. Please repeat and specify which "
                              + str(b_manager.extract_piece_name(user_command))
                              + " you want to move.")
             
@@ -60,7 +61,7 @@ def handle_user_command(ui):
             
         # Notify user if move is illegal
         else:
-            ui.print_to_user("Illegal move! Try again.")
+            ChessUI.print_to_user(ui, "Illegal move! Try again.")
 
         # TO-DO: check for game over
 

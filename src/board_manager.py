@@ -77,15 +77,9 @@ def get_initial_position(command, user_color, board_data):
     initial_position = UNDETERMINED_POSITION
 
     # explicit starting position structure
-<<<<<<< HEAD
-    if (len(command) == 5): 
-        initial_position = _alphanum_to_indices(command[0], int(command[1]), user_color)
-    
-=======
     if len(command) == 5:
         initial_position = _alphanum_to_indices(command[0], int(command[1]), user_color)
 
->>>>>>> master
     # implicit starting position structure
     else:
         # set initial position to the position of the only piece of the given type
@@ -95,11 +89,7 @@ def get_initial_position(command, user_color, board_data):
         final_position = get_final_position(command, user_color, board_data)
         for row in range(0, 8):
             for col in range(0, 8):
-<<<<<<< HEAD
-                board_piece = board_data[row,col]
-=======
                 board_piece = board_data[row, col]
->>>>>>> master
                 if (board_piece.can_be_moved((col, row), final_position, board_data)
                         and board_piece.name == command_piece_name
                         and board_piece.color == user_color):
@@ -109,13 +99,8 @@ def get_initial_position(command, user_color, board_data):
         # situations where multiple pieces could be moved
         if num_movable_pieces > 1:
             initial_position = AMBIGUOUS_POSITION
-<<<<<<< HEAD
-            
-    return (initial_position)
-=======
 
     return initial_position
->>>>>>> master
 
 
 ######################################################################
@@ -153,19 +138,10 @@ def extract_piece_name(command):
 # return      : the index coordinates (0-7) in the form (column, row)
 # example     : _alphanum_to_indices("h", 7, "white") returns (0, 6)
 def _alphanum_to_indices(alpha, num, user_color):
-<<<<<<< HEAD
-    if user_color=='black':
-=======
     if user_color == 'black':
->>>>>>> master
         col = 7 - (ord(alpha) - 97)
         row = num - 1
     else:
         col = ord(alpha) - 97
-<<<<<<< HEAD
-        row = (num - 8)*-1
-    return (col, row)
-=======
         row = (num - 8) * -1
     return col, row
->>>>>>> master

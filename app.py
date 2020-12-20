@@ -1,36 +1,23 @@
 import sys
-import threading
-
 from PyQt5.QtCore import QThread, pyqtSignal
 from PyQt5.QtWidgets import *
 from src import controller
 
-# class StartThread(threading.Thread):
-#     """Thread class with a stop() method. The thread itself has to check
-#        regularly for the stopped() condition."""
-#
-#     def __init__(self, *args, **kwargs):
-#         super(StartThread, self).__init__(*args, **kwargs)
-#         self._stop_event = threading.Event()
-#
-#     def stop(self):
-#         self._stop_event.set()
-#
-#     def stopped(self):
-#         return self._stop_event.is_set()
 
 class ChessUI(QWidget):
     def __init__(self):
         super().__init__()
         self.layout = QVBoxLayout()
-        self.messages = ""
-        self.label = QLabel(self.messages)
+        self.scroll = QScrollArea()
+        self.scrollWidget = QWidget()
+
         self.start_button = QPushButton("Start")
         self.pause_button = QPushButton("Pause")
         self.stop_button = QPushButton("Stop")
-        self.thready = []
+
         self.thread = Worker()
         self.thread.signal.connect(self.quitApp)
+
         self.paused = False
         self.initUI()
 
@@ -39,12 +26,16 @@ class ChessUI(QWidget):
         self.pause_button.clicked.connect(self.buttonClicked)
         self.stop_button.clicked.connect(self.buttonClicked)
 
-        scroll = QScrollArea()
-        scroll.setWidget(self.label)
-        scroll.setWidgetResizable(True)
-        scroll.setFixedHeight(400)
+        self.scrollWidget.setLayout(QVBoxLayout())
+        self.scroll.setWidget(self.scrollWidget)
+        temp = QLabel('Click \"Start\" to begin.')
+        temp.setFixedHeight(20)
+        self.scrollWidget.layout().addWidget(temp)
+        self.scroll.setWidgetResizable(True)
+        self.scroll.setFixedHeight(400)
+        self.scroll.setFixedWidth(400)
 
-        self.layout.addWidget(self.label)
+        self.layout.addWidget(self.scroll)
         self.layout.addWidget(self.start_button)
         self.layout.addWidget(self.pause_button)
         self.layout.addWidget(self.stop_button)
@@ -65,45 +56,32 @@ class ChessUI(QWidget):
                 controller.setup(self)
             self.paused = False
             self.start_button.setDisabled(True)
-            self.start()
+            self.pause_button.setDisabled(False)
+            self.thread.start()
 
         elif sender.text() == 'Pause':
-            self.paused = True
             self.start_button.setDisabled(False)
-            self.print_to_user("Application Paused")
+            self.pause_button.setDisabled(True)
+            self.paused = True
             self.thread.quit = True
-            # self.thready[0].join()
+            self.print_to_user("Application Paused")
 
         elif sender.text() == 'Stop':
             self.quitApp()
 
-    def start(self):
-        self.thread.start()
-        # t = StartThread(target=self.listen, args=())
-        # self.thready.append(t)
-        # t.start()
-
     def quitApp(self):
         self.start_button.setDisabled(True)
         self.pause_button.setDisabled(True)
+        self.thread.quit = True
         self.print_to_user("Bye...")
-        # self.thready[0].join()
         self.close()
         exit(0)
 
     def print_to_user(self, message):
-        self.messages += ('\n' + message)
-        self.label.setText(self.messages)
-        self.label.update()
-        # print(message)
-
-    # def listen(self):
-    #     res = controller.readUserCommand()
-    #     while res != ['exit'] and not self.quit:
-    #         self.print_to_user("Your Command: " + res.__str__())
-    #         res = controller.readUserCommand()
-    #     self.quit = True
-    #     self.quitApp()
+        temp = QLabel(message)
+        temp.setFixedHeight(20)
+        self.scrollWidget.layout().addWidget(temp)
+        self.scrollWidget.update()
 
 
 class Worker(QThread):
@@ -111,7 +89,7 @@ class Worker(QThread):
 
     def __init__(self):
         QThread.__init__(self)
-        self.quit = False
+        self.quit = True
 
     def run(self):
         color = controller.ask_for_color(interface)
@@ -132,12 +110,5 @@ app = QApplication([])
 global interface
 interface = ChessUI()
 
-
-def print_to_user(message):
-    interface.print_to_user(message)
-
-
 if __name__ == "__main__":
-    interface.print_to_user('Click \"Start\" to begin.')
-
-    #sys.exit(app.exec_())
+    sys.exit(app.exec_())
