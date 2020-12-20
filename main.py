@@ -1,4 +1,7 @@
 import logging
+import logging.config
+import os
+import yaml
 import numpy as np
 import time
 
@@ -115,11 +118,9 @@ def format_board_matrix(board_matrix):
 
 # Load logging configuration from file
 def configure_logging():
-    import os
     if not os.path.exists('log'):
         os.makedirs('log')
-    import logging.config
-    import yaml
+
     try:
         with open(LOG_CONF_FILE, 'r') as conf_file:
             log_cfg = yaml.safe_load(conf_file.read())
