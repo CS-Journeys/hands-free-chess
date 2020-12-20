@@ -115,6 +115,9 @@ def format_board_matrix(board_matrix):
 
 # Load logging configuration from file
 def configure_logging():
+    import os
+    if not os.path.exists('log'):
+        os.makedirs('log')
     import logging.config
     import yaml
     try:
