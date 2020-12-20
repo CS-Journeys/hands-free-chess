@@ -6,4 +6,4 @@ user_command = []
 
 adjust_for_ambient_noise(2.0)
 while user_command != ['exit']:
-    user_command = get_voice_commands()
+    user_command = get_voice_command()

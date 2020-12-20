@@ -5,7 +5,6 @@
 # Documentation note: functions which start with underscore are "private"
 
 import speech_recognition as sr
-import json
 
 KEYWORDS_PATH = "res/keywords.txt"
 
@@ -94,7 +93,6 @@ def _fix_common_misinterpretations(my_array):
 # Return      : none
 def adjust_for_ambient_noise(sample_duration):
     with mic as source:
-        print("Adjusting for ambient noise")
         r.adjust_for_ambient_noise(source, sample_duration)
 
 
