@@ -20,3 +20,6 @@ Play chess online using only your voice instead of a keyboard and mouse!
 Let the program do the rest!
 
 To exit, press ```CTRL + C``` in the command line or say "exit" into the mic.
+
+## License
+[GPL](LICENSE)
