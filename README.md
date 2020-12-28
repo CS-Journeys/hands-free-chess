@@ -22,5 +22,4 @@ Let the program do the rest!
 To exit, press ```CTRL + C``` in the command line or say "exit" into the mic.
 
 ## License
-
-(GPL)[LICENSE.md]
+[GPL](LICENSE.md)
