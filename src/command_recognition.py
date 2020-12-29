@@ -1,3 +1,21 @@
+"""
+Hands-Free Chess allows the user to play chess online using only their voice instead of a keyboard and mouse.
+Copyright (C) 2020  CS Journeys
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
+
 # Default sr API is Google Web Speech API
 # Only use the default key for testing (50 requests/day)
 # DO NOT USE THIS API FOR FINAL PROJECT
@@ -109,7 +127,7 @@ def get_voice_command():
     with mic as source:
         audio = r.listen(source)
 
-    # Try to interpet audio with Google Speech API
+    # Try to interpret audio with Google Speech API
     try:
         recognition_guesses = r.recognize_google(audio, show_all=True)['alternative']
         speech_detected = True
@@ -127,7 +145,7 @@ def get_voice_command():
         user_input = _fix_common_misinterpretations(user_input)
         
         # If first guess is not uniquely made up of keywords,
-        # check if remainding guesses are valid
+        # check if remaining guesses are valid
         if (not _is_comprised_of_keywords(user_input)):
             for raw_guess in recognition_guesses:
                 lowercase_guess = raw_guess['transcript'].lower()
