@@ -1,6 +1,9 @@
+import os
+import subprocess
 import sys
 import logging
 import threading
+import webbrowser
 
 from PyQt5.QtCore import QThread, pyqtSignal, QObject, pyqtSlot
 from PyQt5.QtWidgets import *
@@ -18,6 +21,7 @@ class ChessUI(QWidget):
         self.start_button = QPushButton("Start")
         self.pause_button = QPushButton("Pause")
         self.stop_button = QPushButton("Stop")
+        self.help = QPushButton("Help")
 
         self.thread = my_worker
 
@@ -29,6 +33,7 @@ class ChessUI(QWidget):
         self.start_button.clicked.connect(self.buttonClicked)
         self.pause_button.clicked.connect(self.buttonClicked)
         self.stop_button.clicked.connect(self.buttonClicked)
+        self.help.clicked.connect(self.openHelp)
 
         self.scrollWidget.setLayout(QVBoxLayout())
         self.scroll.setWidget(self.scrollWidget)
@@ -44,6 +49,7 @@ class ChessUI(QWidget):
         self.layout.addWidget(self.start_button)
         self.layout.addWidget(self.pause_button)
         self.layout.addWidget(self.stop_button)
+        self.layout.addWidget(self.help)
 
         self.setWindowTitle("Hands Free Chess")
         self.setLayout(self.layout)
@@ -59,14 +65,12 @@ class ChessUI(QWidget):
                 self.log.info("Restarting app")
             else:
                 self.print_to_user("Starting application...")
-                # self.print_to_user("Please wait...")
                 controller.setup(self)
                 self.log.info("First app startup")
             self.paused = False
             self.start_button.setEnabled(False)
             self.pause_button.setEnabled(True)
             self.thread.signal.emit()
-            # self.thread.signal.connect(self.print_to_user)
             self.log.info("Starting thread")
 
         elif sender.text() == 'Pause':
@@ -97,6 +101,13 @@ class ChessUI(QWidget):
         self.scrollWidget.layout().addWidget(temp)
         self.scrollWidget.update()
 
+    def openHelp(self):
+        if sys.platform == 'linux2':
+            os.system("start res/user-manual/user-manual.pdf")
+        else:
+            os.system("open res/user-manual/user-manual.pdf")
+        self.log.info("Opened help document")
+
 
 class Worker2(QObject):
     signal = pyqtSignal()
@@ -121,17 +132,17 @@ class Worker2(QObject):
         self.running = False
 
     def threader(self):
-        self.color = controller.ask_for_color(interface)
+        self.color = controller.ask_for_color(self.interface)
 
         try:
-            interface.print_to_user("Your color: " + self.color)
-            interface.print_to_user("Listening. What's your move?")
+            self.win.interface.print_to_user("Your color: " + self.color)
+            self.win.interface.print_to_user("Listening. What's your move?")
             # self.signal.emit("Your color: " + color)
             # self.signal.emit("Listening. What's your move?")
-            res = controller.handle_user_command(interface)
+            res = controller.handle_user_command(self.interface)
             while res != ['exit'] and self.running:
                 # print_to_user(interface, "Your Command: " + str(res))
-                res = controller.handle_user_command(interface)
+                res = controller.handle_user_command(self.interface)
                 if res == ['exit']:
                     self.running = False
         except Exception as e:
@@ -171,6 +182,10 @@ class Worker2(QObject):
 
 def print_to_user(ui, msg):
     ui.print_to_user(msg)
+
+
+def help():
+    print("Help!")
 
 
 if __name__ == "__main__":
