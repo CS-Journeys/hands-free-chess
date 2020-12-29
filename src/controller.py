@@ -1,19 +1,21 @@
+import os
 import numpy as np
 import time
 import logging
 import logging.config
-
+import yaml
 import app
-from app import ChessUI
 from src import command_recognition as cmd_recog
-from src import board_recognition as b_recog
-from src import board_manager as b_manager
+from src import board_recognition
+from src import board_manager
 from src import mouse_controller
 from src import chess_piece
 
 BOARD_CHECK_PAUSE_TIME = 1.5  # time (in seconds) to wait before rechecking for board
 LOG_CONF_FILE = 'log_config.yaml'
 log = logging.getLogger(__name__)
+b_recog = board_recognition.BoardRecognizer()
+b_manager = board_manager.BoardManager()
 
 # Variable Initialization
 board_data = np.full((8,8), chess_piece.ChessPiece('unknown', 'unknown'))
@@ -42,12 +44,12 @@ def handle_user_command(ui):
     log.info(f"Command: {user_command}")
 
     # Proceed if command contains at least 3 parts (minimum num for a valid cmd)
-    if (len(user_command) >= 3):
+    if len(user_command) >= 3:
         log.info("Searching for board")
         board_coords = b_recog.get_board_coords()
 
         # If board not detected, loop until board is detected
-        while (board_coords == None):
+        while board_coords == None:
             log.info("Searching for board again")
             app.print_to_user(ui, "Board not detected. Searching again.")
             time.sleep(BOARD_CHECK_PAUSE_TIME)
@@ -61,14 +63,12 @@ def handle_user_command(ui):
 
         # Notify user if move is ambiguous
         log.info("Checking ambiguity")
-        if (b_manager.is_ambiguous_move(user_command, user_color, board_data)):
-            app.print_to_user(ui, "Ambiguous move. Please repeat and specify which "
-                             + str(b_manager.extract_piece_name(user_command))
-                             + " you want to move.")
+        if b_manager.is_ambiguous_move(user_command, user_color, board_data):
+            app.print_to_user(ui, "Ambiguous move. Please repeat and specify which " + str(b_manager.extract_piece_name(user_command)) + " you want to move.")
 
         # If move is legal and unambiguous, move piece with mouse
         log.info("Checking legality")
-        elif (b_manager.is_legal_move(user_command, user_color, board_data)):
+        elif b_manager.is_legal_move([user_command, user_color, board_data]):
             log.info(f"OK! Moving {b_manager.extract_piece_name(user_command)}"
                  f" to {user_command[-2]}{user_command[-1]}")
             initial_position = b_manager.get_initial_position(user_command, user_color, board_data)
