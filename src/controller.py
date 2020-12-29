@@ -4,18 +4,17 @@ import time
 import logging
 import logging.config
 import yaml
-import app
 
 from src import command_recognition as cmd_recog
 from src.board_recognition import BoardRecognizer
 from src.board_manager import BoardManager
-from src import user_interface as ui
+import app
 from src import mouse_controller
 from src import chess_piece
 
 BOARD_CHECK_PAUSE_TIME = 1.5  # time (in seconds) to wait before rechecking for board
 LOG_CONF_FILE = 'log_config.yaml'
-log = None
+log = logging.getLogger(__name__)
 global b_recog
 global b_manager
 board_data = None
@@ -27,7 +26,6 @@ user_color = []
 
 def setup(ui):
     # Initialize logging
-    log = logging.getLogger(__name__)
     log.info("Started main()")
 
     # Initialize variables and objects
@@ -43,10 +41,10 @@ def setup(ui):
     cmd_recog.adjust_for_ambient_noise(2.0)
 
 def ask_for_color(ui):
-    global user_color
+    global user_color, user_command
     # Listen for color until a valid piece color is provided - black or white
     log.info("Listening for piece color")
-    app.print_to_user(ui, "Listening. What's your piece color?")
+    ui.print_to_user("Listening. What's your piece color?")
     while user_command != ['white'] and user_command != ['black']:
         user_command = cmd_recog.get_voice_command()
     user_color = user_command[0]
@@ -107,6 +105,8 @@ def handle_user_command(ui):
             else:
                 log.warning(f"{user_command} is illegal")
                 ui.print_to_user("Illegal move! Try again.")
+    else:
+        ui.print_to_user("No speech detected")
 
     return user_command
 
