@@ -102,7 +102,7 @@ class ChessUI(QWidget):
         self.scrollWidget.update()
 
     def openHelp(self):
-        if sys.platform == 'linux2':
+        if sys.platform == 'linux2' or sys.platform == 'win32':
             os.system("start res/user-manual/user-manual.pdf")
         else:
             os.system("open res/user-manual/user-manual.pdf")
