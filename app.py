@@ -1,11 +1,11 @@
 import sys
-from PyQt5.QtCore import QThread, pyqtSignal
+from PyQt5.QtCore import QThread, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import *
 from src import controller
 
 
 class ChessUI(QWidget):
-    def __init__(self):
+    def __init__(self, worker):
         super().__init__()
         self.layout = QVBoxLayout()
         self.scroll = QScrollArea()
@@ -15,8 +15,9 @@ class ChessUI(QWidget):
         self.pause_button = QPushButton("Pause")
         self.stop_button = QPushButton("Stop")
 
-        self.thread = Worker()
-        self.thread.signal.connect(self.quitApp)
+        self.thread = worker
+        self.thread.signal.connect(self.print_to_user)
+        self.thread.finished.connect(self.quitApp)
 
         self.paused = False
         self.initUI()
@@ -28,6 +29,7 @@ class ChessUI(QWidget):
 
         self.scrollWidget.setLayout(QVBoxLayout())
         self.scroll.setWidget(self.scrollWidget)
+
         temp = QLabel('Click \"Start\" to begin.')
         temp.setFixedHeight(20)
         self.scrollWidget.layout().addWidget(temp)
@@ -44,7 +46,7 @@ class ChessUI(QWidget):
         self.setLayout(self.layout)
         self.show()
 
-    def buttonClicked(self, e):
+    def buttonClicked(self):
         sender = self.sender()
         if sender.text() == 'Start':
             if self.paused:
@@ -55,14 +57,16 @@ class ChessUI(QWidget):
                 self.print_to_user("Please wait...")
                 controller.setup(self)
             self.paused = False
-            self.start_button.setDisabled(True)
-            self.pause_button.setDisabled(False)
+            self.start_button.setEnabled(False)
+            self.pause_button.setEnabled(True)
             self.thread.start()
+            self.thread.signal.connect(self.print_to_user)
 
         elif sender.text() == 'Pause':
-            self.start_button.setDisabled(False)
-            self.pause_button.setDisabled(True)
+            self.start_button.setEnabled(True)
+            self.pause_button.setEnabled(False)
             self.paused = True
+            self.thread.running = False
             self.thread.quit = True
             self.print_to_user("Application Paused")
 
@@ -70,45 +74,58 @@ class ChessUI(QWidget):
             self.quitApp()
 
     def quitApp(self):
-        self.start_button.setDisabled(True)
-        self.pause_button.setDisabled(True)
+        self.start_button.setEnabled(False)
+        self.pause_button.setEnabled(False)
+        self.thread.running = False
         self.thread.quit = True
         self.print_to_user("Bye...")
         self.close()
         exit(0)
 
-    def print_to_user(self, message):
-        temp = QLabel(message)
+    def print_to_user(self, msg):
+        temp = QLabel(msg)
         temp.setFixedHeight(20)
         self.scrollWidget.layout().addWidget(temp)
         self.scrollWidget.update()
 
 
 class Worker(QThread):
-    signal = pyqtSignal('PyQt_PyObject')
+    signal = pyqtSignal(str)
 
     def __init__(self):
         QThread.__init__(self)
         self.quit = True
+        self.running = False
 
     def run(self):
-        color = controller.ask_for_color(interface)
-        ChessUI.print_to_user(interface, "Your color: " + color)
-        ChessUI.print_to_user(interface, "Listening. What's your move?")
-        res = controller.handle_user_command(interface)
-        while res != ['exit'] and not self.quit:
-            ChessUI.print_to_user(interface, "Your Command: " + str(res))
+        try:
+            self.running = True
+            color = controller.ask_for_color(interface)
+
+            self.signal.emit("Your color: " + color)
+            self.signal.emit("Listening. What's your move?")
+            # print_to_user(interface, "Your color: " + color)
+            # print_to_user(interface, "Listening. What's your move?")
             res = controller.handle_user_command(interface)
-        return
+            while res != ['exit'] and self.running:
+                self.signal.emit("Your Command: " + str(res))
+                # print_to_user(interface, "Your Command: " + str(res))
+                res = controller.handle_user_command(interface)
+                if res == ['exit'] or self.quit == True:
+                    self.exit()
+        except:
+            print("error")
 
 
+def print_to_user(ui, msg):
+    ui.print_to_user(msg)
 
-
-global app
-app = QApplication([])
-
-global interface
-interface = ChessUI()
 
 if __name__ == "__main__":
+    app = QApplication([])
+    thread = Worker()
+
+    interface = ChessUI(thread)
+    spot = 0
+
     sys.exit(app.exec_())
