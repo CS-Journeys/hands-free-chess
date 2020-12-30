@@ -116,7 +116,6 @@ class ChessUI(QWidget):
 
 class Worker(QThread):
     send_msg = pyqtSignal(str)
-    stop = pyqtSignal(str)
     log = pyqtSignal(str)
 
     def __init__(self, recipient):
