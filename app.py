@@ -16,7 +16,7 @@ class ChessUI(QWidget):
         self.scrollWidget = QWidget()
 
         self.start_button = QPushButton("Start")
-        self.pause_button = QPushButton("Pause")
+        self.pause_button = QPushButton("Pause (coming soon)")
         self.stop_button = QPushButton("Stop")
         self.help = QPushButton("Help")
 
@@ -28,7 +28,8 @@ class ChessUI(QWidget):
     def initUI(self):
         self.log.info("Initializing UI")
         self.start_button.clicked.connect(self.buttonClicked)
-        self.pause_button.clicked.connect(self.buttonClicked)
+        self.pause_button.setEnabled(False)
+        # self.pause_button.clicked.connect(self.buttonClicked)
         self.stop_button.clicked.connect(self.buttonClicked)
         self.help.clicked.connect(self.openHelp)
 
@@ -66,17 +67,17 @@ class ChessUI(QWidget):
                 self.log.info("First app startup")
             self.paused = False
             self.start_button.setEnabled(False)
-            self.pause_button.setEnabled(True)
+            # self.pause_button.setEnabled(True)
             self.log.info("Starting thread")
             self.thread.start()
 
-        elif sender.text() == 'Pause':
-            self.log.info("Pause button pressed")
-            self.start_button.setEnabled(not self.paused)
-            self.pause_button.setEnabled(self.paused)
-            self.paused = True
-            self.thread.stop()
-            self.print_to_user("Application Paused")
+        # elif sender.text() == 'Pause':
+        #     self.log.info("Pause button pressed")
+        #     self.start_button.setEnabled(not self.paused)
+        #     self.pause_button.setEnabled(self.paused)
+        #     self.paused = True
+        #     self.thread.stop()
+        #     self.print_to_user("Application Paused")
 
         elif sender.text() == 'Stop':
             self.log.info("Stop button pressed")
@@ -86,7 +87,7 @@ class ChessUI(QWidget):
     def quitApp(self):
         self.log.info("Quitting app")
         self.start_button.setEnabled(False)
-        self.pause_button.setEnabled(False)
+        # self.pause_button.setEnabled(False)
         self.print_to_user("Bye...")
         self.close()
         exit(0)
