@@ -1,17 +1,14 @@
 import os
-import subprocess
 import sys
 import logging
-import threading
-import webbrowser
 
-from PyQt5.QtCore import QThread, pyqtSignal, QObject, pyqtSlot
+from PyQt5.QtCore import QThread, pyqtSignal, QObject, pyqtSlot, QEvent
 from PyQt5.QtWidgets import *
 from src import controller
 
 
 class ChessUI(QWidget):
-    def __init__(self, my_worker):
+    def __init__(self):
         super().__init__()
         self.layout = QVBoxLayout()
         self.log = logging.getLogger(__name__)
@@ -23,7 +20,7 @@ class ChessUI(QWidget):
         self.stop_button = QPushButton("Stop")
         self.help = QPushButton("Help")
 
-        self.thread = my_worker
+        self.thread = None
 
         self.paused = False
         self.initUI()
@@ -70,26 +67,26 @@ class ChessUI(QWidget):
             self.paused = False
             self.start_button.setEnabled(False)
             self.pause_button.setEnabled(True)
-            self.thread.running = True
             self.log.info("Starting thread")
+            self.thread.start()
 
         elif sender.text() == 'Pause':
             self.log.info("Pause button pressed")
-            self.start_button.setEnabled(True)
-            self.pause_button.setEnabled(False)
+            self.start_button.setEnabled(not self.paused)
+            self.pause_button.setEnabled(self.paused)
             self.paused = True
-            self.thread.stop.emit()
+            self.thread.stop()
             self.print_to_user("Application Paused")
 
         elif sender.text() == 'Stop':
             self.log.info("Stop button pressed")
+            self.thread.stop()
             self.quitApp()
 
     def quitApp(self):
         self.log.info("Quitting app")
         self.start_button.setEnabled(False)
         self.pause_button.setEnabled(False)
-        self.thread.running = False
         self.print_to_user("Bye...")
         self.close()
         exit(0)
@@ -101,6 +98,10 @@ class ChessUI(QWidget):
         self.scrollWidget.layout().addWidget(temp)
         self.scrollWidget.update()
 
+    def customEvent(self, event):
+        if event.type() == 100:
+            self.print_to_user(event.data())
+
     def openHelp(self):
         try:
             if sys.platform == 'linux2' or sys.platform == 'win32':
@@ -108,141 +109,68 @@ class ChessUI(QWidget):
             else:
                 os.system("open res/user-manual/user-manual.pdf")
             self.log.info("Opened help document")
-        except:
-            self.log.error("Unable to open help document. ", exc_info=True)
-
-
-class Worker2(QObject):
-    signal = pyqtSignal()
-    stop = pyqtSignal()
-
-    def __init__(self):
-        QThread.__init__(self)
-        self.running = False
-        self.function = self.threader
-        self.signal.connect(self.run)
-        self.stop.connect(self.pause)
-        self.log = logging.getLogger(__name__)
-        self.color = ''
-
-    @pyqtSlot()
-    def run(self):
-        self.function()
-
-    @pyqtSlot()
-    def pause(self):
-        self.log.info("Thread halted")
-        self.running = False
-
-    def threader(self):
-        try:
-            self.color = controller.ask_for_color(self.interface)
-
-            self.win.interface.print_to_user("Your color: " + self.color)
-            self.win.interface.print_to_user("Listening. What's your move?")
-            # self.signal.emit("Your color: " + color)
-            # self.signal.emit("Listening. What's your move?")
-            res = controller.handle_user_command(self.interface)
-            while res != ['exit'] and self.running:
-                # print_to_user(interface, "Your Command: " + str(res))
-                res = controller.handle_user_command(self.interface)
-                if res == ['exit']:
-                    self.running = False
         except Exception as e:
-            self.log.error(f"Error in thread: {str(e)}")
-
-
-# class Worker(QThread):
-#     signal = pyqtSignal(str)
-#
-#     def __init__(self):
-#         QThread.__init__(self)
-#         self.running = False
-#         self.function = self.threader
-#         self.signal.connect(self.run)
-#         self.stop.connect(self.pause)
-#         self.log = logging.getLogger(__name__)
-#         self.color = ''
-#
-#     @pyqtSlot()
-#     def run(self):
-#         self.function()
-#
-#     @pyqtSlot()
-#     def pause(self):
-#         self.log.info("Thread halted")
-#         self.running = False
-#
-#     def threader(self):
-#         self.color = controller.ask_for_color(self.interface)
-#
-#         try:
-#             self.win.interface.print_to_user("Your color: " + self.color)
-#             self.win.interface.print_to_user("Listening. What's your move?")
-#             # self.signal.emit("Your color: " + color)
-#             # self.signal.emit("Listening. What's your move?")
-#             res = controller.handle_user_command(self.interface)
-#             while res != ['exit'] and self.running:
-#                 # print_to_user(interface, "Your Command: " + str(res))
-#                 res = controller.handle_user_command(self.interface)
-#                 if res == ['exit']:
-#                     self.running = False
-#         except Exception as e:
-#             self.log.debug(f"Error in thread: {str(e)}")
-#             print(f"Error in thread: {str(e)}")
+            self.log.error(f"Unable to open help document: {str(e)} ", exc_info=True)
 
 
 class Worker(QThread):
     send_msg = pyqtSignal(str)
     stop = pyqtSignal(str)
+    log = pyqtSignal(str)
 
-    def __init__(self):
+    def __init__(self, recipient):
         QThread.__init__(self)
-        self.running = False
-        self.log = logging.getLogger(__name__)
+        self.running = True
+        self.name = 'worker'
+        self.receiver = recipient
+        self.color = False
 
     def run(self):
-        if self.running:
-            self.send_msg.emit("Listening. What's your move?")
-            res = controller.handle_user_command(self)
-            if res == ['exit']:
-                self.running = False
-        else:
-            self.running = True
-            color = controller.ask_for_color(self)
-            self.send_msg.emit("Your color: " + color)
+        try:
+            if not self.color:
+                color = controller.ask_for_color(self)
+                self.log.emit("Asking for color")
+                self.send_msg.emit("Your color: " + color)
+                self.color = True
+            while self.running:
+                self.send_msg.emit("Listening. What's your move?")
+                res = controller.handle_user_command(self)
+                while res != ['exit']:
+                    self.log.emit("Handling move")
+                    self.send_msg.emit("Your Command: " + str(res))
+                    res = controller.handle_user_command(self)
+                    if res == ['exit']:
+                        self.stop.emit("Exiting thread...")
+                        self.exit()
+        except Exception as e:
+            self.log.emit(f"Error in thread: {str(e)}")
+            print(f"Error in thread: {str(e)}")
+            self.exit()
 
-        # try:
-        #     self.running = True
-        #
-        #
-        #
-        #     while res != ['exit'] and self.running:
-        #         self.send_msg.emit("Your Command: " + str(res))
-        #         # print_to_user(interface, "Your Command: " + str(res))
-        #         res = controller.handle_user_command(self)
-        #
-        # except Exception as e:
-        #     self.log.debug(f"Error in thread: {str(e)}")
-        #     print(f"Error in thread: {str(e)}")
+    def stop(self):
+        self.running = False
 
 
 def print_to_user(msg):
     interface.print_to_user(msg)
 
 
+def logger(msg):
+    interface.log.info(msg)
+
+
 if __name__ == "__main__":
     controller.configure_logging()
     app = QApplication([])
-    my_thread = QThread()
-    my_thread.start()
+    # my_thread = QThread()
+    # my_thread.start()
 
-    worker = Worker()
-    worker.moveToThread(my_thread)
+    interface = ChessUI()
+
+    worker = Worker(interface.scroll)
     worker.send_msg.connect(print_to_user)
-    worker.stop.connect(print_to_user)
+    worker.log.connect(logger)
 
-    interface = ChessUI(worker)
-    spot = 0
+    interface.thread = worker
 
     sys.exit(app.exec_())

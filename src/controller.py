@@ -17,12 +17,12 @@ LOG_CONF_FILE = 'log_config.yaml'
 log = logging.getLogger(__name__)
 global b_recog
 global b_manager
-board_data = None
 user_command = []
 
 # Variable Initialization
 board_data = np.full((8,8), chess_piece.ChessPiece('unknown', 'unknown'))
 user_color = []
+
 
 def setup(ui):
     # Initialize logging
@@ -40,6 +40,7 @@ def setup(ui):
     ui.print_to_user("Please wait...")
     cmd_recog.adjust_for_ambient_noise(2.0)
 
+
 def ask_for_color(ui):
     global user_color, user_command
     # Listen for color until a valid piece color is provided - black or white
@@ -51,6 +52,7 @@ def ask_for_color(ui):
     b_manager.set_user_color(user_color)
     log.info(f"Piece color: {user_color}")
     return user_color
+
 
 def handle_user_command(ui):
     global user_color, board_data
@@ -109,7 +111,6 @@ def handle_user_command(ui):
         ui.send_msg.emit("No speech detected")
 
     return user_command
-
 
 
 # Useful helper function for aesthetic debugging <3, delete later
