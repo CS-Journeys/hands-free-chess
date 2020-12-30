@@ -102,11 +102,14 @@ class ChessUI(QWidget):
         self.scrollWidget.update()
 
     def openHelp(self):
-        if sys.platform == 'linux2' or sys.platform == 'win32':
-            os.system("start res/user-manual/user-manual.pdf")
-        else:
-            os.system("open res/user-manual/user-manual.pdf")
-        self.log.info("Opened help document")
+        try:
+            if sys.platform == 'linux2' or sys.platform == 'win32':
+                os.system("start res/user-manual/user-manual.pdf")
+            else:
+                os.system("open res/user-manual/user-manual.pdf")
+            self.log.info("Opened help document")
+        except:
+            self.log.error("Unable to open help document. ", exc_info=True)
 
 
 class Worker2(QObject):
