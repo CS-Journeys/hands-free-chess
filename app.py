@@ -102,16 +102,58 @@ class ChessUI(QWidget):
         self.scrollWidget.update()
 
     def openHelp(self):
-        if sys.platform == 'linux2':
-            os.system("start res/user-manual/user-manual.pdf")
-        else:
-            os.system("open res/user-manual/user-manual.pdf")
-        self.log.info("Opened help document")
+        try:
+            if sys.platform == 'linux2' or sys.platform == 'win32':
+                os.system("start res/user-manual/user-manual.pdf")
+            else:
+                os.system("open res/user-manual/user-manual.pdf")
+            self.log.info("Opened help document")
+        except:
+            self.log.error("Unable to open help document. ", exc_info=True)
 
 
-# class Worker2(QObject):
-#     signal = pyqtSignal()
-#     stop = pyqtSignal()
+class Worker2(QObject):
+    signal = pyqtSignal()
+    stop = pyqtSignal()
+
+    def __init__(self):
+        QThread.__init__(self)
+        self.running = False
+        self.function = self.threader
+        self.signal.connect(self.run)
+        self.stop.connect(self.pause)
+        self.log = logging.getLogger(__name__)
+        self.color = ''
+
+    @pyqtSlot()
+    def run(self):
+        self.function()
+
+    @pyqtSlot()
+    def pause(self):
+        self.log.info("Thread halted")
+        self.running = False
+
+    def threader(self):
+        try:
+            self.color = controller.ask_for_color(self.interface)
+
+            self.win.interface.print_to_user("Your color: " + self.color)
+            self.win.interface.print_to_user("Listening. What's your move?")
+            # self.signal.emit("Your color: " + color)
+            # self.signal.emit("Listening. What's your move?")
+            res = controller.handle_user_command(self.interface)
+            while res != ['exit'] and self.running:
+                # print_to_user(interface, "Your Command: " + str(res))
+                res = controller.handle_user_command(self.interface)
+                if res == ['exit']:
+                    self.running = False
+        except Exception as e:
+            self.log.error(f"Error in thread: {str(e)}")
+
+
+# class Worker(QThread):
+#     signal = pyqtSignal(str)
 #
 #     def __init__(self):
 #         QThread.__init__(self)
