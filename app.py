@@ -135,9 +135,9 @@ class Worker2(QObject):
         self.running = False
 
     def threader(self):
-        self.color = controller.ask_for_color(self.interface)
-
         try:
+            self.color = controller.ask_for_color(self.interface)
+
             self.win.interface.print_to_user("Your color: " + self.color)
             self.win.interface.print_to_user("Listening. What's your move?")
             # self.signal.emit("Your color: " + color)
@@ -149,8 +149,7 @@ class Worker2(QObject):
                 if res == ['exit']:
                     self.running = False
         except Exception as e:
-            self.log.debug(f"Error in thread: {str(e)}")
-            print(f"Error in thread: {str(e)}")
+            self.log.error(f"Error in thread: {str(e)}")
 
 
 # class Worker(QThread):
