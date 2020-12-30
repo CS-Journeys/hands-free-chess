@@ -44,7 +44,7 @@ def ask_for_color(ui):
     global user_color, user_command
     # Listen for color until a valid piece color is provided - black or white
     log.info("Listening for piece color")
-    ui.print_to_user("Listening. What's your piece color?")
+    ui.send_msg.emit("Listening. What's your piece color?")
     while user_command != ['white'] and user_command != ['black']:
         user_command = cmd_recog.get_voice_command()
     user_color = user_command[0]
@@ -67,7 +67,7 @@ def handle_user_command(ui):
         # If board not detected, loop until board is detected
         while board_coords is None:
             log.info("Searching for board again")
-            ui.print_to_user("Board not detected. Searching again.")
+            ui.send_msg.emit("Board not detected. Searching again.")
             time.sleep(BOARD_CHECK_PAUSE_TIME)
             board_coords = b_recog.get_board_coords()
 
@@ -87,7 +87,7 @@ def handle_user_command(ui):
         # Notify user if move is ambiguous
         log.info("Checking ambiguity")
         if b_manager.is_ambiguous_move(user_command):
-            ui.print_to_user("Ambiguous move. Please repeat and specify which "
+            ui.send_msg.emit("Ambiguous move. Please repeat and specify which "
                              + str(b_manager.extract_piece_name(user_command))
                              + " you want to move.")
 
@@ -104,9 +104,9 @@ def handle_user_command(ui):
             # Notify user if move is illegal
             else:
                 log.warning(f"{user_command} is illegal")
-                ui.print_to_user("Illegal move! Try again.")
+                ui.send_msg.emit("Illegal move! Try again.")
     else:
-        ui.print_to_user("No speech detected")
+        ui.send_msg.emit("No speech detected")
 
     return user_command
 
