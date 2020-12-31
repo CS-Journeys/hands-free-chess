@@ -54,12 +54,15 @@ if __name__ == "__main__":
     configure_logging()
     app = QApplication([])
 
+    # Initialize the user interface
     interface = ChessUI()
 
+    # Initialize the controller thread
     controller_thread = ControllerThread(interface.scroll)
     controller_thread.send_msg.connect(print_to_user)
     controller_thread.ui_log.connect(logger)
 
+    # Attach the controller thread to the user interface
     interface.thread = controller_thread
 
     sys.exit(app.exec_())
