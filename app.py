@@ -139,13 +139,11 @@ class Worker(QThread):
                     self.log.emit("Handling move")
                     self.send_msg.emit("Your Command: " + str(res))
                     res = controller.handle_user_command(self)
-                    if res == ['exit']:
-                        self.stop.emit("Exiting thread...")
-                        self.exit()
+                self.log.emit("Exiting thread...")
+                self.stop()
         except Exception as e:
             self.log.emit(f"Error in thread: {str(e)}")
-            print(f"Error in thread: {str(e)}")
-            self.exit()
+            self.stop()
 
     def stop(self):
         self.running = False
