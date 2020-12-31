@@ -258,6 +258,7 @@ class BoardRecognizer:
 
         # Take screenshot
         img = ImageGrab.grab()
+        self.log.debug(f"Screenshot size: ({img.width}, {img.height})")
 
         # Process screenshot
         img = img.resize((
