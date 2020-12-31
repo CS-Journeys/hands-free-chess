@@ -257,7 +257,7 @@ class BoardRecognizer:
         # postcondition: a scaled down grayscale screenshot is returned
 
         # Take screenshot
-        img = ImageGrab.grab(bbox=(0,0,self.screen_width,self.screen_height))
+        img = ImageGrab.grab()
 
         # Process screenshot
         img = img.resize((
