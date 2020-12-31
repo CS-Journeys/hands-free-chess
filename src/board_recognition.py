@@ -27,6 +27,7 @@ from scipy.signal import argrelextrema
 
 from src import chess_piece
 
+
 """ CUSTOM DATA TYPES """
 # A ConsecutivePixelColorSequence (cpcs) is a set of consecutive pixels
 # in a row that have the same color value.
@@ -256,7 +257,8 @@ class BoardRecognizer:
         # postcondition: a scaled down grayscale screenshot is returned
 
         # Take screenshot
-        img = ImageGrab.grab(bbox=(0,0,self.screen_width,self.screen_height))
+        img = ImageGrab.grab()
+        self.log.debug(f"Screenshot size: ({img.width}, {img.height})")
 
         # Process screenshot
         img = img.resize((

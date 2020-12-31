@@ -6,6 +6,7 @@ __pycache__/
 #Other (Custom) Excludes
 *.idea
 UML
+log
 
 # C extensions
 *.so

@@ -106,7 +106,6 @@ class ChessPiece:
             if abs(current_pos[1] - next_pos[1]) > 1:
                 is_legal = False
             # TODO: add support for castling. See http://www.learnchessrules.com/castling.htm
-
         # QUEEN
         elif self.name == 'queen':
             # vertical move, but a piece is in the way
