@@ -13,7 +13,7 @@ Play chess online using only your voice instead of a keyboard and mouse!
 1. Login/sign up to [chess.com](https://www.chess.com)
 2. Set board coordinates to "outside" instead of "inside" (chess.com > Settings > Board and Pieces > Coordinates)
 3. Begin chess game
-4. Run ```py main.py``` or ```python main.py``` via the command line
+4. Run ```py app.py``` or ```python app.py``` via the command line
 5. Make chessboard as big as possible to increase image recognition reliability
 5. Say a single or combination of [keywords](res/keywords.txt)
 
