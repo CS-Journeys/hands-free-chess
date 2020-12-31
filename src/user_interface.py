@@ -31,7 +31,7 @@ class ChessUI(QWidget):
 
         self.start_button = QPushButton("Start")
         self.pause_button = QPushButton("Pause (coming soon)")
-        self.stop_button = QPushButton("Stop")
+        self.exit_button = QPushButton("Exit")
         self.help = QPushButton("Help")
 
         self.thread = None
@@ -48,7 +48,7 @@ class ChessUI(QWidget):
         self.start_button.clicked.connect(self.button_clicked)
         self.pause_button.setEnabled(False)
         # self.pause_button.clicked.connect(self.button_clicked)
-        self.stop_button.clicked.connect(self.button_clicked)
+        self.exit_button.clicked.connect(self.button_clicked)
         self.help.clicked.connect(self.open_help)
 
         self.scrollWidget.setLayout(QVBoxLayout())
@@ -64,7 +64,7 @@ class ChessUI(QWidget):
         self.layout.addWidget(self.scroll)
         self.layout.addWidget(self.start_button)
         self.layout.addWidget(self.pause_button)
-        self.layout.addWidget(self.stop_button)
+        self.layout.addWidget(self.exit_button)
         self.layout.addWidget(self.help)
 
         self.setWindowTitle("Hands Free Chess")
@@ -97,8 +97,8 @@ class ChessUI(QWidget):
         #     self.thread.stop()
         #     self.print_to_user("Application Paused")
 
-        elif sender.text() == 'Stop':
-            self.log.info("Stop button pressed")
+        elif sender.text() == 'Exit':
+            self.log.info("Exit button pressed")
             self.thread.stop()
             self.quit_app()
 
