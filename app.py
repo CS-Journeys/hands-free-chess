@@ -38,7 +38,6 @@ def logger(msg):
 def configure_logging():
     if not os.path.exists('log'):
         os.makedirs('log')
-
     try:
         with open(LOG_CONF_FILE, 'r') as conf_file:
             log_cfg = yaml.safe_load(conf_file.read())
