@@ -28,27 +28,26 @@ import logging.config
 LOG_CONF_FILE = 'log_config.yaml'
 
 
-def print_to_user(msg):
-    interface.print_to_user(msg)
-
-def logger(msg):
-    interface.log.info(msg)
-
-# Load logging configuration from file
+'''LOGGING'''
 def configure_logging():
+    # Load logging configuration from file
     if not os.path.exists('log'):
         os.makedirs('log')
-    try:
-        with open(LOG_CONF_FILE, 'r') as conf_file:
-            log_cfg = yaml.safe_load(conf_file.read())
-    except IOError as e:
-        print("Unable to open log config file\n==> " + str(e))
-        exit(1)
+    with open(LOG_CONF_FILE, 'r') as conf_file:
+        log_cfg = yaml.safe_load(conf_file.read())
     try:
         logging.config.dictConfig(log_cfg)
     except ValueError as e:
         print("Unable to load log configuration\n==> " + str(e))
         exit(1)
+
+
+'''SLOT FUNCTIONS'''
+def print_to_user(msg):
+    interface.print_to_user(msg)
+
+def logger(msg):
+    interface.log.info(msg)
 
 
 if __name__ == "__main__":
