@@ -49,7 +49,7 @@ class BoardManager:
         self.user_color = color
         self.board_data = board_data
 
-    """PUBLIC FUNCTIONS"""
+    """ PUBLIC FUNCTIONS """
     def update_board(self, board_data):
         self.log.debug("Updating board data")
         self.board_data = board_data

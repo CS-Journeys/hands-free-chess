@@ -34,7 +34,7 @@ class ControllerThread(QThread):
     send_msg = pyqtSignal(str)
     ui_log = pyqtSignal(str)
 
-    '''CONSTRUCTOR'''
+    """ CONSTRUCTOR """
     def __init__(self, recipient):
         QThread.__init__(self)
         self.controller_log = logging.getLogger(__name__)
@@ -45,118 +45,182 @@ class ControllerThread(QThread):
         self.receiver = recipient
 
         self.color = None
-        self.board_data = np.full((8, 8), chess_piece.ChessPiece('unknown', 'unknown'))
+        self.board_coords = None
         self.b_recog = BoardRecognizer()
-        self.b_manager = BoardManager(self.board_data)
+        self.b_manager = BoardManager(np.full((8, 8), chess_piece.ChessPiece('unknown', 'unknown')))
 
-    '''PUBLIC FUNCTIONS'''
+    """ PUBLIC FUNCTIONS """
     def run(self):
+        # description:
+        #   This function is the heart of Hands-Free Chess.
+        #   It also catches all errors that come from the "controller" thread.
+        # return:
+        #   None
+        # post-condition:
+        #   self.running is False
         try:
             # Adjust microphone for ambient noise
             self._adjust_for_ambient_noise()
 
-            # Set the user's piece color
+            # Set the piece color if it isn't already set
             if self.color is None:
-                self._ask_for_color()
+                self._set_piece_color()
 
-            # Obey the mighty user's commands
+            # Repeatedly ask for commands and handle them
             while self.running:
-                res = self._handle_user_command()
-                while res != ['exit']:
-                    res = self._handle_user_command()
-                self.ui_log.emit("Exiting thread...")
-                self.stop()
+                user_command = self._ask_for_voice_command("Listening. What's your move?")
+                self._handle_voice_command(user_command)
 
-        # Catch errors
         except Exception as e:
             self.ui_log.emit(f"Error in thread: {str(e)}")
             self.stop()
 
     def stop(self):
+        # description: Stop the thread from running
+        # return: None
+        # post-condition: self.running is False
+        self.ui_log.emit("Exiting thread...")
         self.running = False
 
-    '''PRIVATE FUNCTIONS'''
+    """ PRIVATE FUNCTIONS """
+    def _ask_for_voice_command(self, msg):
+        # description: This function asks for a voice command from the user and gets their command.
+        # return: list of strings
+        # parameters: 'msg' is a string
+        # pre-condition: cmd_recog.get_voice_command() only returns empty lists or formatted valid commands
+        # post-condition: a prompt is printed to the UI for the user, and an empty list
+        #                 or a formatted valid command is returned
+        # example:
+        #   1. The message "Listening. What is your command?" is printed to the UI.
+        #   2. The user says, "King to E4".
+        #   3. ["king", "e", "4"] is returned.
+        self.send_msg.emit(msg)
+        self.controller_log.info("Listening for command")
+        user_command = cmd_recog.get_voice_command()
+        self.controller_log.info(f"Command: {user_command}")
+        return user_command
+
     def _adjust_for_ambient_noise(self):
+        # description: Adjust the microphone for ambient noise and notify the user about what's going on.
+        # return: None
+        # post-condition: A "please wait" message is printed to the UI,
+        #                 and then the microphone is adjusted for ambient noise.
         self.controller_log.info("Adjusting microphone for ambient noise")
         self.send_msg.emit("Please wait...")
         cmd_recog.adjust_for_ambient_noise(2.0)
 
-    def _ask_for_color(self):
-        # Listen for color until a valid piece color is provided - black or white
-        self.controller_log.info("Listening for piece color")
-        self.send_msg.emit("Listening. What's your piece color?")
-        user_command = cmd_recog.get_voice_command()
-        while user_command != ['white'] and user_command != ['black']:
-            self.send_msg.emit('Try again. Say "white" or "black".')
-            user_command = cmd_recog.get_voice_command()
+    def _set_piece_color(self):
+        # description: This function gets the piece color from the user
+        # return: None
+        # pre-condition: cmd_recog.get_voice_command() can return single-word commands (['white'], ['exit'], etc.)
+        # post-condition:
+        #   The user is asked via the UI to declare their piece color, then
+        #   EITHER self.color is "black" or "white", and the user is notified of their choice via the UI,
+        #   OR self.stop() is called (ie. self.running = False)
+        self.controller_log.debug("Listening for piece color")
+        user_command = self._ask_for_voice_command("Listening. What's your piece color?")
+        while user_command != ['white'] and user_command != ['black'] and user_command != ['exit']:
+            self.controller_log.debug("Trying to listen again for piece color")
+            user_command = self._ask_for_voice_command('Try again. Say "white" or "black".')
 
-        # Set the user's piece color
-        self.color = user_command[0]
-        self.b_manager.set_user_color(self.color)
-        self.controller_log.info(f"Piece color: {self.color}")
-        self.send_msg.emit(f"Your color: {self.color}")
+        if user_command == ['exit']:
+            self.stop()
+        else:
+            self.color = user_command[0]
+            self.b_manager.set_user_color(self.color)
+            self.controller_log.debug(f"Piece color: {self.color}")
+            self.send_msg.emit(f"Your color: {self.color}")
 
-    def _handle_user_command(self):
-        self.board_data = np.full((8, 8), chess_piece.ChessPiece('unknown', 'unknown'))
-
-        self.controller_log.info("Listening for command")
-        self.send_msg.emit("Listening. What's your move?")
-        user_command = cmd_recog.get_voice_command()
-        self.controller_log.info(f"Command: {user_command}")
-
-        # Proceed if command contains at least 3 parts (minimum num for a valid move cmd)
-        if len(user_command) >= 3:
-            self.send_msg.emit(f"Your Command: {user_command}")
-            self.controller_log.info("Searching for board")
-            board_coords = self.b_recog.get_board_coords()
-
-            # If board not detected, loop until board is detected
-            while board_coords is None:
-                self.controller_log.info("Searching for board again")
-                self.send_msg.emit("Board not detected. Searching again.")
-                time.sleep(BOARD_CHECK_PAUSE_TIME)
-                board_coords = self.b_recog.get_board_coords()
-
-            # Identify each piece on board
-            self.controller_log.info("Identifying pieces")
-            for row in range(1, 8 + 1):
-                for col in range(1, 8 + 1):
-                    self.board_data[row - 1][col - 1] = self.b_recog.identify_piece(col, row)
-
-            # Update the board manager's board data
-            self.b_manager.update_board(self.board_data)
-
-            # Log board data
-            formatted_board_data = _format_board_matrix(self.board_data)
-            self.controller_log.info(f"Formatted board data:\n{formatted_board_data}")
-
-            # Notify user if move is ambiguous
-            self.controller_log.info("Checking ambiguity")
-            if self.b_manager.is_ambiguous_move(user_command):
-                self.send_msg.emit("Ambiguous move. Please repeat and specify which "
-                                   + str(self.b_manager.extract_piece_name(user_command))
-                                   + " you want to move.")
-
-            # If move is legal and unambiguous, move piece with mouse
-            else:
-                self.controller_log.info("Checking legality")
-                if self.b_manager.is_legal_move(user_command):
-                    self.controller_log.info(f"OK! Moving {self.b_manager.extract_piece_name(user_command)}"
-                                             f" to {user_command[-2]}{user_command[-1]}")
-                    initial_position = self.b_manager.get_initial_position(user_command)
-                    final_position = self.b_manager.get_final_position(user_command)
-                    mouse_controller.move_piece(initial_position, final_position, board_coords)
-
-                # Notify user if move is illegal
-                else:
-                    self.controller_log.warning(f"{user_command} is illegal")
-                    self.send_msg.emit("Illegal move! Try again.")
+    def _handle_voice_command(self, user_command):
+        # description: Print and act appropriately in response to the user's command
+        # return: None
+        # pre-condition: cmd_recog.get_voice_command() only returns empty lists or formatted valid commands
+        # post-condition:
+        #   1. An appropriate response to the user's command is printed to the UI
+        #   2. If the user said "exit", self.running is False
+        #      If the user said a move, then
+        #        a. The board_coords and the board_manager's chessboard data are updated
+        #        b. If the move is legal and unambiguous, the move is made
+        # TODO: add support for other commands like so: "elif user_command == ['change color']: ...."
+        if not user_command:
+            self.send_msg.emit("No speech detected")
         elif user_command == ['exit']:
             self.send_msg.emit("Stopping Hands-Free Chess as requested by the user.")
+            self.stop()
         else:
-            self.send_msg.emit("No speech detected")
+            self.send_msg.emit(f"Your move: {user_command}")
+            self._update_chessboard()
+            self._handle_move(user_command)
 
-        return user_command
+    def _update_chessboard(self):
+        # description: Update the coordinates of all of the chessboard's vertical and horizontal grid lines, and
+        #              update the board_manager to contain the current state of the board (ie. which pieces are where)
+        # return: None
+        # pre-condition: The user doesn't want to do anything while HFC runs its image recognition
+        # post-condition: self.board_coords and the board_manager's chessboard data are updated
+
+        # Repeatedly search for chessboard until it is detected
+        self.controller_log.info("Searching for board")
+        self.board_coords = self.b_recog.get_board_coords()
+        while self.board_coords is None:
+            time.sleep(BOARD_CHECK_PAUSE_TIME)
+            self.controller_log.info("Searching for board again")
+            self.send_msg.emit("Board not detected. Searching again.")
+            self.board_coords = self.b_recog.get_board_coords()
+
+        # Identify each piece on board
+        self.controller_log.info("Identifying pieces")
+        chessboard = np.full((8, 8), chess_piece.ChessPiece('unknown', 'unknown'))
+        for row in range(1, 8 + 1):
+            for col in range(1, 8 + 1):
+                chessboard[row - 1][col - 1] = self.b_recog.identify_piece(col, row)
+
+        # Update the board manager's chessboard data
+        self.b_manager.update_board(chessboard)
+
+        # Log board data
+        formatted_board_data = _format_board_matrix(chessboard)
+        self.controller_log.info(f"Formatted board data:\n{formatted_board_data}")
+
+    def _handle_move(self, move_command):
+        # description:
+        #   Make the user's move (on condition that the move is legal and unambiguous).
+        # return:
+        #   None
+        # parameters:
+        #   move_command: list of strings
+        # pre-condition:
+        #   'move_command' represents a formatted valid command
+        #   self.board_coords represent the CURRENT location of the boards' grid coordinates
+        #   the board manager's chessboard data is CURRENT
+        # post-condition:
+        #   If the move is ambiguous or illegal, an appropriate message is printed to the UI
+        #   If the move is unambiguous and legal, the piece is moved with the mouse
+
+        # Get ambiguity and legality of move
+        self.controller_log.info("Checking ambiguity")
+        is_ambiguous = self.b_manager.is_ambiguous_move(move_command)
+        is_legal = False
+        if not is_ambiguous:
+            self.controller_log.info("Checking legality")
+            is_legal = self.b_manager.is_legal_move(move_command)
+
+        # Notify user if move is ambiguous
+        if is_ambiguous:
+            self.send_msg.emit("Ambiguous move. Please repeat and specify which "
+                               + str(self.b_manager.extract_piece_name(move_command))
+                               + " you want to move.")
+        # Notify user if move is illegal
+        elif not is_legal:
+            self.controller_log.warning(f"{move_command} is illegal")
+            self.send_msg.emit("Illegal move! Try again.")
+        # If move is unambiguous and legal, move piece with mouse
+        else:
+            self.controller_log.info(f"OK! Moving {self.b_manager.extract_piece_name(move_command)}"
+                                     f" to {move_command[-2]}{move_command[-1]}")
+            initial_position = self.b_manager.get_initial_position(move_command)
+            final_position = self.b_manager.get_final_position(move_command)
+            mouse_controller.move_piece(initial_position, final_position, self.board_coords)
 
 
 # Useful helper function for aesthetic debugging <3, delete later
