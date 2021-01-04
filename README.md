@@ -16,7 +16,7 @@ Play chess online using only your voice instead of a keyboard and mouse!
     a. Open System Preferences  
     b. Navigate to Security & Privacy > Screen Recording  
     c. Click the lock icon to make a change  
-    d. Make sure `Hands Free Chess` is checked off. This allows the application to monitor your screen while you play so it can recognize the board.
+    d. Make sure your python IDE (PyCharm, Idle, etc.) or the Terminal is checked off. This allows the application to monitor your screen while you play so it can recognize the board and pieces.
 
 ## License
 [GPL](LICENSE)
