@@ -137,7 +137,7 @@ def get_voice_command():
         print("No speech detected\n********\n")
 
     # Process Google Speech API results if the API returned something to process
-    if (speech_detected):
+    if speech_detected:
         
         # Get keywords from first (and most likely correct) guess
         first_guess = recognition_guesses[0]['transcript'].lower()
@@ -146,18 +146,18 @@ def get_voice_command():
         
         # If first guess is not uniquely made up of keywords,
         # check if remaining guesses are valid
-        if (not _is_comprised_of_keywords(user_input)):
+        if not _is_comprised_of_keywords(user_input):
             for raw_guess in recognition_guesses:
                 lowercase_guess = raw_guess['transcript'].lower()
                 user_input = _split_string_into_array(lowercase_guess)
                 user_input = _fix_common_misinterpretations(user_input)
-                if (_is_comprised_of_keywords(user_input)):
+                if _is_comprised_of_keywords(user_input):
                     break
 
         # If, after having checked all guesses by the API, user_input is still not uniquely comprised of keywords,
         # then set user_input to an empty array.
         # The empty array means that the user did not exclusively say words that were understood by our dictionary
-        if (not _is_comprised_of_keywords(user_input)):
+        if not _is_comprised_of_keywords(user_input):
             user_input = []
 
         print("Google API response: " + str(recognition_guesses))
