@@ -10,8 +10,13 @@ Play chess online using only your voice instead of a keyboard and mouse!
 (Installing in a [virtual environment](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/) is highly recommended)
 
 ## Usage
-1. Run ```py app.py``` or ```python app.py``` via the command line
-2. Follow the instructions from the "Help" button
+1. Run ```py app.py``` or ```python app.py``` via the command line  
+2. Follow the instructions from the "Help" button  
+3. Mac Users:  
+    a. Open System Preferences  
+    b. Navigate to Security & Privacy > Screen Recording  
+    c. Click the lock icon to make a change  
+    d. Make sure `Hands Free Chess` is checked off. This allows the application to monitor your screen while you play so it can recognize the board.
 
 ## License
 [GPL](LICENSE)
