@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import sys
 from PyQt5.QtWidgets import *
 from src.user_interface import ChessUI
-from src.controller import ControllerThread
+from src.game_controller import ControllerThread
 import os
 import yaml
 import logging
