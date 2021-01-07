@@ -18,6 +18,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import sys
 import os
+
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import *
 import logging
 
@@ -57,6 +59,7 @@ class ChessUI(QWidget):
         temp = QLabel('Click \"Start\" to begin.')
         temp.setFixedHeight(20)
         self.scrollWidget.layout().addWidget(temp)
+        self.scrollWidget.layout().setAlignment(Qt.AlignTop)
         self.scroll.setWidgetResizable(True)
         self.scroll.setFixedHeight(400)
         self.scroll.setFixedWidth(400)
