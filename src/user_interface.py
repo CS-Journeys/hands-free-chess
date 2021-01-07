@@ -35,6 +35,8 @@ class ChessUI(QWidget):
         self.pause_button = QPushButton("Pause (coming soon)")
         self.exit_button = QPushButton("Exit")
         self.help = QPushButton("Help")
+        self.setWindowFlags(Qt.WindowStaysOnTopHint)
+        self.scrollWidget.setWindowFlags(Qt.WindowStaysOnTopHint)
 
         self.thread = None
 
