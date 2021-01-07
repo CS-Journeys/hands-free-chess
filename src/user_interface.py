@@ -119,8 +119,10 @@ class ChessUI(QWidget):
 
     def open_help(self):
         try:
-            if sys.platform == 'linux2' or sys.platform == 'win32':
+            if sys.platform == 'win32':
                 os.system("start res/user-manual/user-manual.pdf")
+            elif sys.platform == 'linux' or sys.platform == 'linux2':
+                os.system("xdg-open res/user-manual/user-manual.pdf")
             else:
                 os.system("open res/user-manual/user-manual.pdf")
             self.log.info("Opened help document")
