@@ -54,6 +54,7 @@ class FTPManager:
             self.log.debug(ftp_response)
             ftp_response = self.session.mkd(self.get_user_directory_name())
             self.log.debug(ftp_response)
+            self.log.info("Remote user directory created")
             self.quit_session()
         except:
             self.log.error('Unable to create the directory ' + self.get_user_directory_name(), exc_info=True)
