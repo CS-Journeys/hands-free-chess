@@ -6,7 +6,7 @@ import yaml
 import ftplib
 from threading import Thread
 
-LOG_CONF_FILE = 'log_config.yaml'
+LOG_CONF_FILE = 'config/log_config.yaml'
 MAX_LOG_SIZE = 50 # MB
 
 

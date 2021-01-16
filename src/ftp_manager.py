@@ -13,7 +13,8 @@ simple_gui = tk.Tk()
 simple_gui.withdraw()
 simple_gui.geometry("500x500")
 
-FTP_CONF_FILE = 'ftp_config.yaml'
+BASE_CONF_FILE = 'config/base_ftp_config.yaml'
+FTP_CONF_FILE = 'config/user_ftp_config.yaml'
 random.seed(time.time())
 
 class FTPManager:
@@ -34,7 +35,6 @@ class FTPManager:
 
     def init_user(self):
         # Set user's name and ID
-        # TODO: ask user through a GUI
         user_input = simpledialog.askstring(title=" ",
                                             prompt="Welcome to Hands-Free Chess!\n"
                                                    "Thank you for participating in the beta-testing.\n\n"
@@ -105,7 +105,7 @@ class FTPManager:
     def load_config(self):
         if not path.exists(FTP_CONF_FILE):
             self.log.warning("Could not find user's ftp config file. Generating a new config.")
-            shutil.copy('res/base_ftp_config.yaml', FTP_CONF_FILE)
+            shutil.copy(BASE_CONF_FILE, FTP_CONF_FILE)
         with open(FTP_CONF_FILE, 'r') as conf_file:
             self.cfg = yaml.safe_load(conf_file.read())
 
