@@ -18,28 +18,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import sys
 from PyQt5.QtWidgets import *
+from src.log_manager import LogManager
 from src.user_interface import ChessUI
 from src.game_controller import ControllerThread
-import os
-import yaml
-import logging
-import logging.config
-
-LOG_CONF_FILE = 'log_config.yaml'
-
-
-'''LOGGING'''
-def configure_logging():
-    # Load logging configuration from file
-    if not os.path.exists('log'):
-        os.makedirs('log')
-    with open(LOG_CONF_FILE, 'r') as conf_file:
-        log_cfg = yaml.safe_load(conf_file.read())
-    try:
-        logging.config.dictConfig(log_cfg)
-    except ValueError as e:
-        print("Unable to load log configuration\n==> " + str(e))
-        exit(1)
 
 
 '''SLOT FUNCTIONS'''
@@ -50,8 +31,9 @@ def logger(msg):
     interface.log.info(msg)
 
 
+'''APP ENTRY POINT'''
 if __name__ == "__main__":
-    configure_logging()
+    log_manager = LogManager()
     app = QApplication([])
 
     # Initialize the user interface

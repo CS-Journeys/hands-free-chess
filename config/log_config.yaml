@@ -67,7 +67,17 @@ loggers:
     handlers: [default_file_handler]
     propogate: no
 
-  src.controller:
+  src.game_controller:
+    level: DEBUG
+    handlers: [ default_file_handler ]
+    propogate: no
+
+  src.log_manager:
+    level: DEBUG
+    handlers: [ default_file_handler ]
+    propogate: no
+
+  src.ftp_manager:
     level: DEBUG
     handlers: [ default_file_handler ]
     propogate: no

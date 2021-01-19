@@ -6,7 +6,7 @@ from src.board_recognition import BoardRecognizer
 from src import chess_piece
 
 try:
-    with open('../log_config.yaml', 'r') as conf_file:
+    with open('../config/log_config.yaml', 'r') as conf_file:
         log_cfg = yaml.safe_load(conf_file.read())
 except IOError as e:
     print("Unable to open log config file\n==> " + str(e))

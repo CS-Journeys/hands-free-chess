@@ -268,7 +268,7 @@ class BoardRecognizer:
 
         # Save screenshot for debugging purposes
         log_ss = cv2.resize(processed_screenshot, (320, 180), interpolation=cv2.INTER_AREA)
-        cv2.imwrite(IMG_LOG_PATH + time.strftime('%Y-%m-%d %H.%M.%S.png', time.localtime()),
+        cv2.imwrite(IMG_LOG_PATH + time.strftime('%Y-%m-%d_%H.%M.%S.png', time.localtime()),
                     log_ss, [int(cv2.IMWRITE_PNG_COMPRESSION), 7])
 
         return processed_screenshot
