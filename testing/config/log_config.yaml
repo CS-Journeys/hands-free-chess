@@ -1,0 +1,87 @@
+version: 1
+
+formatters:
+  simple:
+    format: "%(name)s %(levelname)s: %(message)s"
+  extended:
+    format: "%(asctime)s %(name)s %(levelname)s: %(message)s"
+
+handlers:
+  console_handler:
+    class: logging.StreamHandler
+    level: INFO
+    formatter: simple
+    stream: ext://sys.stdout
+
+  default_file_handler:
+    class: logging.FileHandler
+    level: DEBUG
+    filename: log/hfc.log
+    formatter: extended
+
+  img_recog_handler:
+    class: logging.FileHandler
+    level: DEBUG
+    filename: log/img_recog.log
+    formatter: extended
+
+  chess_piece_handler:
+    class: logging.FileHandler
+    level: DEBUG
+    filename: log/rules.log
+    formatter: extended
+
+loggers:
+  __main__:
+    level: DEBUG
+    handlers: [default_file_handler]
+    propogate: no
+
+  src.board_recognition:
+    level: DEBUG
+    handlers: [img_recog_handler]
+    propogate: no
+
+  src.board_manager:
+    level: DEBUG
+    handlers: [ default_file_handler ]
+    propogate: no
+
+  src.command_recognition:
+    level: DEBUG
+    handlers: [default_file_handler]
+    propogate: no
+
+  src.chess_piece:
+    level: DEBUG
+    handlers: [chess_piece_handler]
+    propogate: no
+
+  src.mouse_controller:
+    level: DEBUG
+    handlers: [default_file_handler]
+    propogate: no
+
+  src.user_interface:
+    level: DEBUG
+    handlers: [default_file_handler]
+    propogate: no
+
+  src.game_controller:
+    level: DEBUG
+    handlers: [ default_file_handler ]
+    propogate: no
+
+  src.log_manager:
+    level: DEBUG
+    handlers: [ default_file_handler ]
+    propogate: no
+
+  src.ftp_manager:
+    level: DEBUG
+    handlers: [ default_file_handler ]
+    propogate: no
+
+root:
+  level: INFO
+  handlers: [console_handler]

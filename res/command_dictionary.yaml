@@ -1,0 +1,57 @@
+keywords:
+  start_move_words:
+    - king
+    - queen
+    - bishop
+    - knight
+    - rook
+    - pawn
+  single_command_words:
+    - exit
+    - cancel
+    - help
+    - pause
+    - black
+    - white
+  letter_words:
+    - a
+    - b
+    - c
+    - d
+    - e
+    - f
+    - g
+    - h
+  digit_words:
+    - "1"
+    - "2"
+    - "3"
+    - "4"
+    - "5"
+    - "6"
+    - "7"
+    - "8"
+  to:
+    - to
+    - "2"
+  change:
+    - change
+  color:
+    - color
+
+command_formats:
+  implicit_destination_move:
+    - start_move_words
+    - letter_words
+    - digit_words
+  explicit_destination_move:
+    - start_move_words
+    - letter_words
+    - digit_words
+    - letter_words
+    - digit_words
+  single_word_command:
+    - single_command_words
+  change_color_command:
+    - change
+    - color
