@@ -9,7 +9,6 @@ wait,white
 weight,white
 nate,knight
 qingji,king g
-king iii,king e3
 on,pawn
 pawnee,pawn e
 change,king
@@ -24,6 +23,10 @@ ga,g8
 of,f
 sex,6
 kanji,pawn g
-pons iii,pawn c3
 see,c
 colour,color
+tank,king
+punji,pawn g
+sticks,6
+tg6,king g6
+six,6
