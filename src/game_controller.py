@@ -1,6 +1,6 @@
 """
 Hands-Free Chess allows the user to play chess online using only their voice instead of a keyboard and mouse.
-Copyright (C) 2020  CS Journeys
+Copyright (C) 2020-2021  CS Journeys
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -15,24 +15,30 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+import threading
+import time
 
 import numpy as np
-import time
 import logging
 from PyQt5.QtCore import QThread, pyqtSignal
+import queue
 
-from src import command_recognition as cmd_recog
+from src.speech_to_text import SpeechRecognizer
+from src.text_to_command import TextToCmdBuffer
 from src.board_recognition import BoardRecognizer
 from src.board_manager import BoardManager
+from src.command import Command, MoveCommand
 from src import mouse_controller
 from src import chess_piece
 
-BOARD_CHECK_PAUSE_TIME = 1.5  # time (in seconds) to wait before rechecking for board
-
+BOARD_CHECK_PAUSE_TIME = 1.5 # time (in seconds) to wait before rechecking for board
 
 class ControllerThread(QThread):
     send_msg = pyqtSignal(str)
     ui_log = pyqtSignal(str)
+    finished = pyqtSignal()
+    pause = pyqtSignal()
+    help = pyqtSignal()
 
     """ CONSTRUCTOR """
     def __init__(self, recipient):
@@ -40,163 +46,109 @@ class ControllerThread(QThread):
         self.controller_log = logging.getLogger(__name__)
         self.controller_log.info("Setting up controller")
 
-        self.running = True
+        self.running = False
+        self.paused = False
         self.name = 'worker'
         self.receiver = recipient
 
-        self.color = None
+        self.raw_text_queue = queue.Queue(maxsize=10)
+        self.cmd_recog = SpeechRecognizer(self.raw_text_queue)
+        self.txt_to_cmd_buffer = TextToCmdBuffer()
+
         self.board_coords = None
+        self.board_state = None
+        self.board_queue = queue.Queue(maxsize=1)
         self.b_recog = BoardRecognizer()
+        self.stop_event = threading.Event()
+        self.b_recog_thread = threading.Thread(target=self.b_recog.endlessly_recognize_board,
+                                               args=(self.board_queue,0.2,self.stop_event))
+
+        self.color = None
         self.b_manager = BoardManager(np.full((8, 8), chess_piece.ChessPiece('unknown', 'unknown')))
 
-    """ PUBLIC FUNCTIONS """
+    """ PUBLIC """
     def run(self):
-        # description:
-        #   This function is the heart of Hands-Free Chess.
-        #   It also catches all errors that come from the "controller" thread.
-        # return:
-        #   None
-        # post-condition:
-        #   self.running is False
+        self.running = True
         try:
-            # Adjust microphone for ambient noise
-            self._adjust_for_ambient_noise()
+            # TODO: set the piece color
 
-            # Set the piece color if it isn't already set
-            if self.color is None:
-                self._set_piece_color()
+            # Start the board recognizer thread
+            self.stop_event.clear()
+            self.b_recog_thread.start()
 
-            # Repeatedly ask for commands and handle them
-            while self.running:
-                user_command = self._ask_for_voice_command("Listening. What's your move?")
-                self._handle_voice_command(user_command)
+            # Start the background listener
+            self.cmd_recog.listen_in_background()
+
+            # Handle commands as they arrive in the command queue
+            while self.running or not self.raw_text_queue.empty():
+                if self.paused:
+                    self.stop_event.set()
+                    self.cmd_recog.stop_listening(wait_for_stop=False)
+                    while self.paused:
+                        time.sleep(0.1)
+                    self.resume()
+
+                self._handle_command(self.raw_text_queue.get())
 
         except Exception as e:
             self.ui_log.emit(f"Error in thread: {str(e)}")
             self.stop()
 
+    def resume(self):
+        self.controller_log.info("Resuming thread...")
+        self.stop_event.clear()
+        self.b_recog_thread = threading.Thread(target=self.b_recog.endlessly_recognize_board,
+                                               args=(self.board_queue,0.2,self.stop_event))
+        self.b_recog_thread.start()
+        self.cmd_recog.listen_in_background()
+
     def stop(self):
-        # description: Stop the thread from running
-        # return: None
-        # post-condition: self.running is False
         self.ui_log.emit("Exiting thread...")
+        self.cmd_recog.stop_listening(wait_for_stop=False)
+        self.stop_event.set()
         self.running = False
+        self.finished.emit()
 
-    """ PRIVATE FUNCTIONS """
-    def _ask_for_voice_command(self, msg):
-        # description: This function asks for a voice command from the user and gets their command.
-        # return: list of strings
-        # parameters: 'msg' is a string
-        # pre-condition: cmd_recog.get_voice_command() only returns empty lists or formatted valid commands
-        # post-condition: a prompt is printed to the UI for the user, and an empty list
-        #                 or a formatted valid command is returned
-        # example:
-        #   1. The message "Listening. What is your command?" is printed to the UI.
-        #   2. The user says, "King to E4".
-        #   3. ["king", "e", "4"] is returned.
-        self.send_msg.emit(msg)
-        self.controller_log.info("Listening for command")
-        user_command = cmd_recog.get_voice_command()
-        self.controller_log.info(f"Command: {user_command}")
-        return user_command
-
-    def _adjust_for_ambient_noise(self):
-        # description: Adjust the microphone for ambient noise and notify the user about what's going on.
-        # return: None
-        # post-condition: A "please wait" message is printed to the UI,
-        #                 and then the microphone is adjusted for ambient noise.
-        self.controller_log.info("Adjusting microphone for ambient noise")
-        self.send_msg.emit("Please wait...")
-        cmd_recog.adjust_for_ambient_noise(2.0)
-
-    def _set_piece_color(self):
-        # description: This function gets the piece color from the user
-        # return: None
-        # pre-condition: cmd_recog.get_voice_command() can return single-word commands (['white'], ['exit'], etc.)
-        # post-condition:
-        #   The user is asked via the UI to declare their piece color, then
-        #   EITHER self.color is "black" or "white", and the user is notified of their choice via the UI,
-        #   OR self.stop() is called (ie. self.running = False)
-        self.controller_log.debug("Listening for piece color")
-        user_command = self._ask_for_voice_command("Listening. What's your piece color?")
-        while user_command != ['white'] and user_command != ['black'] and user_command != ['exit']:
-            self.controller_log.debug("Trying to listen again for piece color")
-            user_command = self._ask_for_voice_command('Try again. Say "white" or "black".')
-
-        if user_command == ['exit']:
-            self.stop()
-        else:
-            self.color = user_command[0]
-            self.b_manager.set_user_color(self.color)
-            self.controller_log.debug(f"Piece color: {self.color}")
-            self.send_msg.emit(f"Your color: {self.color}")
-
-    def _handle_voice_command(self, user_command):
-        # description: Print and act appropriately in response to the user's command
-        # return: None
-        # pre-condition: cmd_recog.get_voice_command() only returns empty lists or formatted valid commands
-        # post-condition:
-        #   1. An appropriate response to the user's command is printed to the UI
-        #   2. If the user said "exit", self.running is False
-        #      If the user said a move, then
-        #        a. The board_coords and the board_manager's chessboard data are updated
-        #        b. If the move is legal and unambiguous, the move is made
-        # TODO: add support for other commands like so: "elif user_command == ['change color']: ...."
-        if not user_command:
-            self.send_msg.emit("No speech detected")
-        elif user_command == ['exit']:
-            self.send_msg.emit("Stopping Hands-Free Chess as requested by the user.")
-            self.stop()
-        else:
-            self.send_msg.emit(f"Your move: {user_command}")
-            self._update_chessboard()
-            self._handle_move(user_command)
+    """ PRIVATE """
+    def _handle_command(self, raw_text):
+        if not self.paused:
+            if raw_text == SpeechRecognizer.NOT_RECOGNIZED:
+                self.send_msg.emit("No speech detected")
+            else:
+                buffer_state = self.txt_to_cmd_buffer.add_text(raw_text)
+                command = self.txt_to_cmd_buffer.get_command()
+                if isinstance(command, MoveCommand):
+                    self.send_msg.emit(f"Your move: {command.text()}")
+                    self._update_chessboard()
+                    if self.board_state is not None:
+                        self._handle_move(command)
+                elif isinstance(command, Command):
+                    self.send_msg.emit(f"Your command: {command.text()}")
+                    if command.text() == 'exit':
+                        self.send_msg.emit("Stopping Hands-Free Chess as requested by the user.")
+                        self.stop()
+                    elif command.text() == 'pause':
+                        self.pause.emit()
+                    elif command.text() == 'help':
+                        self.help.emit()
+                else:
+                    self.send_msg.emit(f"Your command: {' '.join(buffer_state)}...")
 
     def _update_chessboard(self):
-        # description: Update the coordinates of all of the chessboard's vertical and horizontal grid lines, and
-        #              update the board_manager to contain the current state of the board (ie. which pieces are where)
-        # return: None
-        # pre-condition: The user doesn't want to do anything while HFC runs its image recognition
-        # post-condition: self.board_coords and the board_manager's chessboard data are updated
+        if self.board_queue.empty():
+            self.controller_log.warning("Chessboard data queue is empty")
+            self.send_msg.emit("Warning: Chessboard not detected. Please try again.")
+            self.board_coords = None
+            self.board_state = None
+        else:
+            self.board_coords, self.board_state = self.board_queue.get()
+            self.b_manager.update_board(self.board_state)
 
-        # Repeatedly search for chessboard until it is detected
-        self.controller_log.info("Searching for board")
-        self.board_coords = self.b_recog.get_board_coords()
-        while self.board_coords is None:
-            time.sleep(BOARD_CHECK_PAUSE_TIME)
-            self.controller_log.info("Searching for board again")
-            self.send_msg.emit("Board not detected. Searching again.")
-            self.board_coords = self.b_recog.get_board_coords()
-
-        # Identify each piece on board
-        self.controller_log.info("Identifying pieces")
-        chessboard = np.full((8, 8), chess_piece.ChessPiece('unknown', 'unknown'))
-        for row in range(1, 8 + 1):
-            for col in range(1, 8 + 1):
-                chessboard[row - 1][col - 1] = self.b_recog.identify_piece(col, row)
-
-        # Update the board manager's chessboard data
-        self.b_manager.update_board(chessboard)
-
-        # Log board data
-        formatted_board_data = _format_board_matrix(chessboard)
-        self.controller_log.info(f"Formatted board data:\n{formatted_board_data}")
+            # Log board state
+            formatted_board_state = _format_board_matrix(self.board_state)
+            self.controller_log.info(f"Formatted board state:\n{formatted_board_state}")
 
     def _handle_move(self, move_command):
-        # description:
-        #   Make the user's move (on condition that the move is legal and unambiguous).
-        # return:
-        #   None
-        # parameters:
-        #   move_command: list of strings
-        # pre-condition:
-        #   'move_command' represents a formatted valid command
-        #   self.board_coords represent the CURRENT location of the boards' grid coordinates
-        #   the board manager's chessboard data is CURRENT
-        # post-condition:
-        #   If the move is ambiguous or illegal, an appropriate message is printed to the UI
-        #   If the move is unambiguous and legal, the piece is moved with the mouse
-
         # Get ambiguity and legality of move
         self.controller_log.info("Checking ambiguity")
         is_ambiguous = self.b_manager.is_ambiguous_move(move_command)
@@ -208,16 +160,15 @@ class ControllerThread(QThread):
         # Notify user if move is ambiguous
         if is_ambiguous:
             self.send_msg.emit("Ambiguous move. Please repeat and specify which "
-                               + str(self.b_manager.extract_piece_name(move_command))
+                               + move_command.piece_name
                                + " you want to move.")
         # Notify user if move is illegal
         elif not is_legal:
-            self.controller_log.warning(f"{move_command} is illegal")
+            self.controller_log.warning(f"{move_command.text()} is illegal")
             self.send_msg.emit("Illegal move! Try again.")
         # If move is unambiguous and legal, move piece with mouse
         else:
-            self.controller_log.info(f"OK! Moving {self.b_manager.extract_piece_name(move_command)}"
-                                     f" to {move_command[-2]}{move_command[-1]}")
+            self.controller_log.info(f"OK! Moving {move_command.text()}")
             initial_position = self.b_manager.get_initial_position(move_command)
             final_position = self.b_manager.get_final_position(move_command)
             mouse_controller.move_piece(initial_position, final_position, self.board_coords)
