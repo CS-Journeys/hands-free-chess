@@ -28,7 +28,6 @@ class MoveCommand:
             # TODO: logging and error msg stuff
             raise ValueError
 
-    # TODO: fill function stubs
     def text(self):
         return self.piece_name.capitalize() + " to " + self.dest_col.upper() + self.dest_row
 
