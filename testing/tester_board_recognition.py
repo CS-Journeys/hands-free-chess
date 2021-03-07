@@ -33,14 +33,14 @@ recognizer = BoardRecognizer()
 while a != "q":
     
     # Get board coords
-    board_coords = recognizer.get_board_coords()
+    board_coords = recognizer._get_board_coords()
     print("Board coords = " + str(board_coords))
     
     # Identify each piece on board
     if board_coords is not None:
         for row in range(1, 8+1):
             for col in range(1, 8+1):
-                board_data[row-1][col-1] = recognizer.identify_piece(col,row)
+                board_data[row-1][col-1] = recognizer._identify_piece(col, row)
     else:
         board_data = np.full((8,8), chess_piece.ChessPiece('unknown', 'unknown'))
 
