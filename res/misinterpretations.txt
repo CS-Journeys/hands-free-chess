@@ -1,0 +1,32 @@
+connie,pawn e
+night,knight
+brooke,rook
+rookie,rook e
+for,4
+at,f
+94,knight e4
+wait,white
+weight,white
+nate,knight
+qingji,king g
+on,pawn
+pawnee,pawn e
+change,king
+83,a3
+route,rook
+be,b
+nights,knight
+asics,a6
+next,knight
+essex,e6
+ga,g8
+of,f
+sex,6
+kanji,pawn g
+see,c
+colour,color
+tank,king
+punji,pawn g
+sticks,6
+tg6,king g6
+six,6
