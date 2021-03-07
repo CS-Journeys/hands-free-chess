@@ -69,14 +69,32 @@ class BoardRecognizer:
         self.scaled_row_coords = []
 
     """ PUBLIC FUNCTIONS """
-    def get_board_coords(self):
+    def endlessly_recognize_board(self, board_queue, pause_time, stop_event):
+        self.log.info("Beginning endless loop of board recognition...")
+        while not stop_event.is_set():
+            self.recognize_board(board_queue)
+            time.sleep(pause_time)
+
+    def recognize_board(self, board_queue):
+        board_coords = self._get_board_coords()
+        if board_coords is not None:
+            # TODO: properly initialize the numpy array
+            board_state = np.full((8, 8), chess_piece.ChessPiece('unknown', 'unknown'))
+            for row in range(1, 8 + 1):
+                for col in range(1, 8 + 1):
+                    board_state[row - 1][col - 1] = self._identify_piece(col, row)
+
+            board_queue.put((board_coords, board_state))
+
+    """ PRIVATE FUNCTIONS """
+    def _get_board_coords(self):
         # description  : Find the chessboard and its coordinates on the screen
         # return       : two lists of floats
         # precondition : None
         # postcondition: If chessboard is detected, return the 9-elements lists
         #                of vertical and horizontal line coordinates.
         #                If chessboard is not detected, return None.
-        self.log.info("Started getting board coordinates")
+        self.log.debug("Started getting board coordinates")
 
         # Take screenshot
         self.frame = self._get_processed_screenshot()
@@ -191,16 +209,16 @@ class BoardRecognizer:
             # Set return value
             board_coords = (fullsize_col_coords, fullsize_row_coords)
         else:
-            self.log.warning("Chessboard not detected")
+            self.log.debug("Chessboard not detected")
             board_coords = None
 
-        self.log.info(f"Board coordinates: {board_coords}")
+        self.log.debug(f"Board coordinates: {board_coords}")
         return board_coords
 
-    def identify_piece(self, col, row):
+    def _identify_piece(self, col, row):
         # description  : Identify the chess piece at a given location on the board
         # return       : ChessPiece
-        # precondition : get_board_coords() was executed and successfully located the board,
+        # precondition : _get_board_coords() was executed and successfully located the board,
         #                col and row are integers
         # postcondition: The ChessPiece object which corresponds to the specified location on
         #                the board is returned. Note that an empty tile is a type of ChessPiece.
@@ -249,7 +267,6 @@ class BoardRecognizer:
 
         return piece
 
-    """ PRIVATE FUNCTIONS """
     def _get_processed_screenshot(self):
         # description  : Take a screenshot and optimize it for image recognition
         # return       : 2D numpy array
