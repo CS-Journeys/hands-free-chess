@@ -8,6 +8,7 @@ __pycache__/
 UML
 log
 config/user_ftp_config.yaml
+testing/res/user_ftp_config.yaml
 
 # C extensions
 *.so
