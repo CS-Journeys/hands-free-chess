@@ -70,14 +70,15 @@ class ControllerThread(QThread):
     def run(self):
         self.running = True
         try:
-            # TODO: set the piece color
-
             # Start the board recognizer thread
             self.stop_event.clear()
             self.b_recog_thread.start()
 
             # Start the background listener
             self.cmd_recog.listen_in_background()
+
+            # Ask for user color
+            self.send_msg.emit("What's your piece color?")
 
             # Handle commands as they arrive in the command queue
             while self.running or not self.raw_text_queue.empty():
@@ -94,6 +95,8 @@ class ControllerThread(QThread):
             self.ui_log.emit(f"Error in thread: {str(e)}")
             self.stop()
 
+        self.finished.emit()
+
     def resume(self):
         self.controller_log.info("Resuming thread...")
         self.stop_event.clear()
@@ -107,12 +110,13 @@ class ControllerThread(QThread):
         self.cmd_recog.stop_listening(wait_for_stop=False)
         self.stop_event.set()
         self.running = False
-        self.finished.emit()
 
     """ PRIVATE """
     def _handle_command(self, raw_text):
         if not self.paused:
-            if raw_text == SpeechRecognizer.NOT_RECOGNIZED:
+            if self.color is None:
+                self._set_piece_color(raw_text)
+            elif raw_text == SpeechRecognizer.NOT_RECOGNIZED:
                 self.send_msg.emit("No speech detected")
             else:
                 buffer_state = self.txt_to_cmd_buffer.add_text(raw_text)
@@ -172,6 +176,21 @@ class ControllerThread(QThread):
             initial_position = self.b_manager.get_initial_position(move_command)
             final_position = self.b_manager.get_final_position(move_command)
             mouse_controller.move_piece(initial_position, final_position, self.board_coords)
+
+    def _set_piece_color(self, raw_text):
+        lower = raw_text.lower()
+        if lower == 'black' or lower == 'white':
+            self.color = lower
+            self.send_msg.emit(f"Your color: {self.color}")
+            self.controller_log.debug(f"Piece color: {self.color}")
+            self.send_msg.emit("What's your move?")
+        elif lower == SpeechRecognizer.NOT_RECOGNIZED:
+            self.send_msg.emit("No speech detected. Please try again. Say \"white\" or \"black.\"")
+        elif lower == 'exit':
+            self.send_msg.emit("Stopping Hands-Free Chess as requested by the user.")
+            self.stop()
+        else:
+            self.send_msg.emit(f"You said: {lower}. Please try again. Say \"white\" or \"black.\"")
 
 
 # Useful helper function for aesthetic debugging <3, delete later
