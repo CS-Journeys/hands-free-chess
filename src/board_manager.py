@@ -16,20 +16,11 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+# TODO: update the comments
 ######################################################################
 # PARAMETER DOCUMENTATION
 #
-# command is an array of strings
-#   implicit initial position structure:
-#     command[0] is "knight", "bishop", "pawn", things like that.
-#     command[1] is the final position letter (lowercase a-h)
-#     command[2] is the final position number (1-8)
-#   explicit initial position structure:
-#     command[0] is the initial position letter (lowercase a-h)
-#     command[1] is the initial position number (1-8)
-#     command[2] is the piece name ("knight", "bishop", etc.)
-#     command[3] is the final position letter (lowercase a-h)
-#     command[4] is the final position number (1-8)
+# command is a MoveCommand object
 #
 # board_data is a 8x8 numpy array
 #   each element is a ChessPiece object that contains name and color
@@ -44,7 +35,7 @@ UNDETERMINED_POSITION = (-1, -1)
 AMBIGUOUS_POSITION = (-2, -2)
 
 class BoardManager:
-    def __init__(self, board_data, color='unknown'):
+    def __init__(self, board_data, color='black'):
         self.log = logging.getLogger(__name__)
         self.user_color = color
         self.board_data = board_data
@@ -65,7 +56,7 @@ class BoardManager:
         # return      : True or False
         ######################################################################
 
-        self.log.info(f"Started checking legality of {command}")
+        self.log.info(f"Started checking legality of {command.text()}")
 
         is_legal = False
 
@@ -85,7 +76,7 @@ class BoardManager:
             self.log.debug(f"Attempting to move piece {piece.color} {piece.name} "
                            f"from {initial_position} to {final_position}")
 
-            if (piece.name == self.extract_piece_name(command)
+            if (piece.name == command.piece_name
                     and piece.color == self.user_color
                     and piece.can_be_moved(initial_position, final_position, self.board_data)):
                 is_legal = True
@@ -95,7 +86,7 @@ class BoardManager:
 
     def is_ambiguous_move(self, command):
         # description : Determine if the initial position is ambiguous (aka multiple initial positions are possible)
-        # parameters  : array of strings, string, 8x8 matrix of ChessPieces
+        # parameters  : MoveCommand object, string, 8x8 matrix of ChessPieces
         # return      : If the initial position is ambiguous, return True,
         #               else, return False
         # example     : The command is ["knight", "d", "6"], the user is Black,
@@ -108,9 +99,9 @@ class BoardManager:
         initial_position = self.get_initial_position(command)
         if initial_position == AMBIGUOUS_POSITION:
             is_ambiguous = True
-            self.log.warning(f"{command} is ambiguous")
+            self.log.warning(f"{command.text()} is ambiguous")
         else:
-            self.log.debug(f"{command} is unambiguous. Initial position: {initial_position}")
+            self.log.debug(f"{command.text()} is unambiguous. Initial position: {initial_position}")
         return is_ambiguous
 
     def get_initial_position(self, command):
@@ -125,35 +116,32 @@ class BoardManager:
 
         initial_position = UNDETERMINED_POSITION
 
-        # explicit starting position structure
-        if len(command) == 5:
-            initial_position = self._alphanum_to_indices(command[0], int(command[1]))
-            self.log.debug(f"Explicit command structure, initial_position: {initial_position}")
-
-        # implicit starting position structure
-        else:
+        if command.get_src() is None:
             # set initial position to the position of the only piece of the given type
             # that can be moved to the final position as declared by the command
             num_movable_pieces = 0
-            command_piece_name = command[0]
             final_position = self.get_final_position(command)
             for row in range(0, 8):
                 for col in range(0, 8):
                     board_piece = self.board_data[row, col]
                     if (board_piece.can_be_moved((col, row), final_position, self.board_data)
-                            and board_piece.name == command_piece_name
+                            and board_piece.name == command.piece_name
                             and board_piece.color == self.user_color):
                         initial_position = (col, row)
                         num_movable_pieces += 1
-                        self.log.debug(f"Implicit command structure, {command_piece_name} "
+                        self.log.debug(f"Implicit command structure, {command.piece_name} "
                                        f"@ {initial_position} can be moved")
+
             # set initial position to unknown in ambiguous
             # situations where multiple pieces could be moved
             if num_movable_pieces > 1:
                 initial_position = AMBIGUOUS_POSITION
                 self.log.warning(f"Implicit command structure, ambiguous starting position: {num_movable_pieces} "
-                                 f"{command_piece_name}s could be moved to {final_position}")
+                                 f"{command.piece_name}s could be moved to {final_position}")
+        else:
+            initial_position = self._alphanum_to_indices(command.get_src())
 
+        self.log.debug(f"initial_position: {initial_position}")
         return initial_position
 
     def get_final_position(self, command):
@@ -163,30 +151,20 @@ class BoardManager:
         # example     : The command is ["king", "d", "7"], the user is White,
         #               and the white king is currently at D8.
         #               => the function returns (6, 4)
-        final_position = self._alphanum_to_indices(command[-2], int(command[-1]))
+        self.log.info("Getting final position")
+        final_position = self._alphanum_to_indices(command.get_dest())
         return final_position
 
-    @staticmethod
-    def extract_piece_name(command):
-        # description : Extract the name of the piece to be moved from the user's command
-        # parameters  : array of strings
-        # return      : a string
-        # example     : extract_piece_name(["king", "d", "7"]) returns "king"
-        #               extract_piece_name(["d", "8", "king", "d", "7"]) returns "king"
-        if len(command) == 5:
-            name = command[2]
-        else:
-            name = command[0]
-        return name
-
     """ PRIVATE FUNCTIONS """
-    def _alphanum_to_indices(self, alpha, num):
+    def _alphanum_to_indices(self, coords):
         # description : Convert alphanumeric coordinates to index coordinates
-        # parameters  : a single character lowercase string (a-h),
-        #               a single digit number (1-8),
-        #               and the color of the user's pieces ("black" or "white")
+        # parameters  : a tuple composed of...
+        #                   a single character lowercase string (a-h),
+        #                   a single digit number (1-8)
         # return      : the index coordinates (0-7) in the form (column, row)
-        # example     : _alphanum_to_indices("h", 7, "white") returns (0, 6)
+        # example     : _alphanum_to_indices("h", 7) returns (0, 6)
+        alpha = coords[0]
+        num = int(coords[1])
         if self.user_color == 'black':
             col = 7 - (ord(alpha) - 97)
             row = num - 1
