@@ -142,8 +142,10 @@ class ChessUI(QWidget):
     def quit_app(self):
         self.log.info("Quitting app")
         self.print_to_user("Bye...")
+        self.thread.quit()
+        self.thread.wait()
         self.close()  # Close the UI
-        exit(0)
+        quit(0)
 
     def pause(self):
         self.print_to_user("Application Paused")
