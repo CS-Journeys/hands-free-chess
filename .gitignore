@@ -9,6 +9,7 @@ UML
 log
 config/user_ftp_config.yaml
 testing/config/user_ftp_config.yaml
+*.exe
 
 # C extensions
 *.so
