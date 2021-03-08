@@ -101,10 +101,45 @@ class ChessPiece:
         if self.name == 'king':
             # move by more than 1 column
             if abs(current_pos[0] - next_pos[0]) > 1:
-                is_legal = False
+                if not ((self.color == 'white' and current_pos == [4, 7]) or (self.color == 'black' and current_pos == [3, 7])):
+                    is_legal = False
+                else:
+                    if self.color == 'black':
+                        if (current_pos[0] - next_pos[0]) == 2:
+                            if not ((board_data[7, 0].name == 'rook') and (board_data[7, 0].color == 'black')):
+                                is_legal = False
+                            else:
+                                if not _horizontal_is_blocked(7, [3,0], board_data):
+                                    is_legal = False
+                        elif (current_pos[0] - next_pos[0]) == -2:
+                            if not ((board_data[7, 7].name == 'rook') and (board_data[7, 7].color == 'black')):
+                                is_legal = False
+                            else:
+                                if not _horizontal_is_blocked(7, [3,7], board_data):
+                                    is_legal = False
+                        else:
+                            is_legal = False
+                    else:
+                        if (current_pos[0] - next_pos[0]) == 2:
+                            if not ((board_data[7, 0].name == 'rook') and (board_data[7, 0].color == 'white')):
+                                is_legal = False
+                            else:
+                                if not _horizontal_is_blocked(7, [4, 0], board_data):
+                                    is_legal = False
+                        elif (current_pos[0] - next_pos[0]) == -2:
+                            if not ((board_data[7,7].name == 'rook') and (board_data[7,7].color == 'white')):
+                                is_legal = False
+                            else:
+                                if not _horizontal_is_blocked(7, [4,7], board_data):
+                                    is_legal = False
+                        else:
+                            is_legal = False
+
+
             # move by more than 1 row
             if abs(current_pos[1] - next_pos[1]) > 1:
                 is_legal = False
+
             # TODO: add support for castling. See http://www.learnchessrules.com/castling.htm
         # QUEEN
         elif self.name == 'queen':
@@ -132,7 +167,20 @@ class ChessPiece:
         elif self.name == 'pawn':
             # not vertical move
             if not _on_vertical_line(sorted_columns):
-                is_legal = False
+                if (current_pos[1] - next_pos[1]) == 1 and abs(current_pos[0] - next_pos[0]) == 1:
+                    if board_data[next_pos[1], next_pos[0]].name == 'pawn' or (current_pos[1] == 3 and board_data[3, next_pos[0]].name == 'pawn'):
+                        if self.color == 'black':
+                            if not((board_data[next_pos[1], next_pos[0]].color == 'white') or (board_data[next_pos[1]-1, next_pos[0]].color == 'white')):
+                                is_legal = False
+                        else:
+                            if not((board_data[next_pos[1], next_pos[0]].color == 'black') or (board_data[next_pos[1]-1, next_pos[0]].color == 'black')):
+                                is_legal = False
+                    else:
+                        is_legal = False
+                else:
+                    is_legal = False
+#                is_legal = False
+
             # move forward by 2, but...
             if current_pos[1] - next_pos[1] == 2:
                 # pawn not in starting position
