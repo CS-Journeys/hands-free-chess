@@ -106,6 +106,7 @@ class ControllerThread(QThread):
         self.cmd_recog.listen_in_background()
 
     def stop(self):
+        # TODO: fix no-exit bug
         self.ui_log.emit("Exiting thread...")
         self.cmd_recog.stop_listening(wait_for_stop=False)
         self.stop_event.set()
@@ -183,6 +184,7 @@ class ControllerThread(QThread):
             self.color = lower
             self.send_msg.emit(f"Your color: {self.color}")
             self.controller_log.debug(f"Piece color: {self.color}")
+            self.b_manager.user_color = self.color
             self.send_msg.emit("What's your move?")
         elif lower == SpeechRecognizer.NOT_RECOGNIZED:
             self.send_msg.emit("No speech detected. Please try again. Say \"white\" or \"black.\"")
