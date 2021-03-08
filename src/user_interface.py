@@ -143,7 +143,7 @@ class ChessUI(QWidget):
         self.log.info("Quitting app")
         self.print_to_user("Bye...")
         self.close()  # Close the UI
-        quit(0)
+        sys.exit(0)
 
     def pause(self):
         self.print_to_user("Application Paused")

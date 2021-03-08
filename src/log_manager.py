@@ -4,6 +4,7 @@ import logging
 import logging.config
 import yaml
 import ftplib
+import sys
 from threading import Thread
 
 LOG_CONF_FILE = 'config/log_config.yaml'
@@ -73,7 +74,7 @@ def _configure_logging():
         logging.config.dictConfig(log_cfg)
     except ValueError as e:
         print("Unable to load log configuration\n==> " + str(e))
-        exit(1)
+        sys.exit(1)
 
 def _calculate_bytes_per_unit(unit):
     bytes_per_unit = 1
