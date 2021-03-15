@@ -1,42 +1,21 @@
-"""
-Hands-Free Chess allows the user to play chess online using only their voice instead of a keyboard and mouse.
-Copyright (C) 2020  CS Journeys
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""
-
-######################################################################
-# PARAMETER DOCUMENTATION
-#
-# board_coords is a tuple of two 9-element lists
-#   first list contains the x coordinates of each vertical line
-#   second list contains the y coordinates of each horizontal line
-#
-# start is a 2-element tuple
-#   first element is the column number (0-7)
-#   second element is the row number   (0-7)
-#
-# end is also a 2-element tuple
-#   first element is the column number (0-7)
-#   second element is the row number   (0-7)
-#
-######################################################################
-
 import pyautogui
 import logging
 
 def move_piece(start, end, board_coords):
+    """
+    This function moves a chess piece by clicking and dragging on the screen.
+
+    Parameters:
+        - start: a tuple of two integers with the first element as a column number, and the second a row number (0-7)
+        - end: a tuple of two integers with the first element as a column number, and the second a column number (0-7)
+        - board_coords: a tuple of two 9-element lists --
+                        the first list contains the x pixel coordinates of each vertical line
+                        the second list contains the y pixel coordinates of each horizontal line
+    Output:
+        - return: none
+        - mouse: the mouse moves to the center of the 'start' location and then clicks and drags to the 'end' location
+    """
+
     # Define the actual coordinates for the mouse. Rounded just in case partial pixels are frowned upon.
     # Just takes the arithmetic mean of the vertical/horizontal boundaries of the square to find the approximate center
     # to click.

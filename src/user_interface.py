@@ -1,29 +1,11 @@
-"""
-Hands-Free Chess allows the user to play chess online using only their voice instead of a keyboard and mouse.
-Copyright (C) 2020  CS Journeys
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""
-
 import sys
 import os
+import logging
 
 from PyQt5.QtCore import Qt, QTimer
 from functools import partial
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QIcon
-import logging
 
 
 # ChessUI
@@ -64,7 +46,7 @@ class ChessUI(QWidget):
     # Parameters: None
     # Return: Void
     def init_ui(self):
-        self.log.info("Initializing UI")
+        self.log.debug("Initializing UI")
         self.start_button.clicked.connect(self.button_clicked)  # Call click function when start is clicked
         self.pause_button.setEnabled(False)
         self.pause_button.clicked.connect(self.button_clicked)
@@ -102,15 +84,14 @@ class ChessUI(QWidget):
     def button_clicked(self):
         sender = self.sender()  # Get current button
         if sender.text() == 'Start':  # Start button execution
-            self.log.info("Start button pressed")
+            self.log.debug("Start button pressed")
             if self.paused:
-                self.print_to_user("Resuming application...")
-                self.log.info("Resuming app")
+                self.print_to_user("Application Resumed. What's your next move?")
+                self.log.debug("Resuming app")
                 self.thread.paused = False
             else:
-                self.print_to_user("Starting application...")
-                self.log.info("First app startup")
-                self.log.info("Starting thread")
+                self.log.debug("First app startup")
+                self.log.debug("Starting thread")
                 self.thread.start()
                 self.thread.finished.connect(self.quit_app)
                 self.thread.pause.connect(self.pause)
@@ -121,7 +102,7 @@ class ChessUI(QWidget):
             self.pause_button.setEnabled(True)
 
         elif sender.text() == 'Pause':
-            self.log.info("Pause button pressed")
+            self.log.debug("Pause button pressed")
             self.paused = True
             self.thread.paused = True
             self.start_button.setEnabled(True)
@@ -130,7 +111,7 @@ class ChessUI(QWidget):
 
         # Exit button execution
         elif sender.text() == 'Exit':
-            self.log.info("Exit button pressed")
+            self.log.debug("Exit button pressed")
             if self.thread.running:
                 self.thread.stop()
             self.quit_app()

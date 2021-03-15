@@ -1,21 +1,3 @@
-"""
-Hands-Free Chess allows the user to play chess online using only their voice instead of a keyboard and mouse.
-Copyright (C) 2020  CS Journeys
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""
-
 import logging
 import time
 from PIL import ImageGrab
@@ -25,37 +7,39 @@ import pyautogui
 from sklearn.neighbors import KernelDensity
 from scipy.signal import argrelextrema
 
-from src import chess_piece
+from src.chess_piece import ChessPiece
 
 
-""" CUSTOM DATA TYPES """
-# A ConsecutivePixelColorSequence (cpcs) is a set of consecutive pixels
-# in a row that have the same color value.
-# Each cpcs has a color, start index, and length.
+''' CUSTOM DATA TYPES '''
 class ConsecutivePixelColorSequence:
+    """
+    A ConsecutivePixelColorSequence (cpcs) is a set of consecutive pixels in a row that have the same color value.
+    Each cpcs has a color, start index, and length.
+    """
     def __init__(self, color, start_pixel, length=1):
         self.color = color
         self.start_pixel = start_pixel
         self.length = length
 
 
-""" CONSTANTS """
+''' CONSTANTS '''
 SCALED_HEIGHT = 720 # arbitrary low resolution to reduce computation time
 REFERENCE_IMG_DIM = 33 # width and height in pixels
 IMG_LOG_PATH = 'log/'
-CHESS_PIECES = [chess_piece.ChessPiece('pawn', 'black'),
-                chess_piece.ChessPiece('rook', 'black'),
-                chess_piece.ChessPiece('knight', 'black'),
-                chess_piece.ChessPiece('bishop', 'black'),
-                chess_piece.ChessPiece('queen', 'black'),
-                chess_piece.ChessPiece('king', 'black'),
-                chess_piece.ChessPiece('pawn', 'white'),
-                chess_piece.ChessPiece('rook', 'white'),
-                chess_piece.ChessPiece('knight', 'white'),
-                chess_piece.ChessPiece('bishop', 'white'),
-                chess_piece.ChessPiece('queen', 'white'),
-                chess_piece.ChessPiece('king', 'white'),
-                chess_piece.ChessPiece('empty', 'empty')]
+CHESS_PIECES = [ChessPiece('pawn', 'black'),
+                ChessPiece('rook', 'black'),
+                ChessPiece('knight', 'black'),
+                ChessPiece('bishop', 'black'),
+                ChessPiece('queen', 'black'),
+                ChessPiece('king', 'black'),
+                ChessPiece('pawn', 'white'),
+                ChessPiece('rook', 'white'),
+                ChessPiece('knight', 'white'),
+                ChessPiece('bishop', 'white'),
+                ChessPiece('queen', 'white'),
+                ChessPiece('king', 'white'),
+                ChessPiece('empty', 'empty')]
+LOG_FREQUENCY = 60 # log one image every 60 seconds
 
 
 class BoardRecognizer:
@@ -68,32 +52,42 @@ class BoardRecognizer:
         self.scaled_col_coords = []
         self.scaled_row_coords = []
 
-    """ PUBLIC FUNCTIONS """
+    ''' PUBLIC FUNCTIONS '''
     def endlessly_recognize_board(self, board_queue, pause_time, stop_event):
-        self.log.info("Beginning endless loop of board recognition...")
+        time_until_log = LOG_FREQUENCY
+        self.log.debug("Beginning endless loop of board recognition...")
         while not stop_event.is_set():
             self.recognize_board(board_queue)
+            time_until_log -= pause_time
             time.sleep(pause_time)
+            if time_until_log <= 0:
+                self._get_processed_screenshot(log_this_ss=True)
+                time_until_log = LOG_FREQUENCY # reset the time until the next img log
 
     def recognize_board(self, board_queue):
         board_coords = self._get_board_coords()
         if board_coords is not None:
             # TODO: properly initialize the numpy array
-            board_state = np.full((8, 8), chess_piece.ChessPiece('unknown', 'unknown'))
+            board_state = np.full((8, 8), ChessPiece('unknown', 'unknown'))
             for row in range(1, 8 + 1):
                 for col in range(1, 8 + 1):
                     board_state[row - 1][col - 1] = self._identify_piece(col, row)
 
             board_queue.put((board_coords, board_state))
 
-    """ PRIVATE FUNCTIONS """
+    ''' PRIVATE FUNCTIONS '''
     def _get_board_coords(self):
-        # description  : Find the chessboard and its coordinates on the screen
-        # return       : two lists of floats
-        # precondition : None
-        # postcondition: If chessboard is detected, return the 9-elements lists
-        #                of vertical and horizontal line coordinates.
-        #                If chessboard is not detected, return None.
+        """
+        This function finds the chessboard and its coordinates on the screen.
+
+        Parameters:
+            - none
+        Output:
+            - return: if the chessboard is detected, return a tuple of two lists of floats --
+                        the first list contains the x pixel coordinates of each vertical line,
+                        and the second list contains the y pixel coordinates of each horizontal line
+                      if the chessboard is not detected, return None
+        """
         self.log.debug("Started getting board coordinates")
 
         # Take screenshot
@@ -144,8 +138,6 @@ class BoardRecognizer:
                         checker_pattern_start_index].start_pixel
                     chessboard_size = chessboard_size + (chessboard_size / 7) + 1
 
-                    # TODO: Programmatically fix this size bug instead of
-                    #        hard-coding a specific value
                     chessboard_size -= 2
                     break
 
@@ -267,7 +259,7 @@ class BoardRecognizer:
 
         return piece
 
-    def _get_processed_screenshot(self):
+    def _get_processed_screenshot(self, log_this_ss=False):
         # description  : Take a screenshot and optimize it for image recognition
         # return       : 2D numpy array
         # precondition : SCREEN_WIDTH and SCREEN_HEIGHT have been correctly initialized
@@ -284,9 +276,10 @@ class BoardRecognizer:
         processed_screenshot = cv2.cvtColor(img_np, cv2.COLOR_BGR2GRAY)
 
         # Save screenshot for debugging purposes
-        log_ss = cv2.resize(processed_screenshot, (320, 180), interpolation=cv2.INTER_AREA)
-        cv2.imwrite(IMG_LOG_PATH + time.strftime('%Y-%m-%d_%H.%M.%S.png', time.localtime()),
-                    log_ss, [int(cv2.IMWRITE_PNG_COMPRESSION), 7])
+        if log_this_ss:
+            log_ss = cv2.resize(processed_screenshot, (320, 180), interpolation=cv2.INTER_AREA)
+            cv2.imwrite(IMG_LOG_PATH + time.strftime('%Y-%m-%d_%H.%M.%S.png', time.localtime()),
+                        log_ss, [int(cv2.IMWRITE_PNG_COMPRESSION), 7])
 
         return processed_screenshot
 

@@ -1,21 +1,3 @@
-"""
-Hands-Free Chess allows the user to play chess online using only their voice instead of a keyboard and mouse.
-Copyright (C) 2020-2021  CS Journeys
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""
-
 import speech_recognition as sr
 import logging
 
@@ -26,9 +8,9 @@ NOISE_SAMPLE_DURATION = 1.0 # the sample duration for estimating the ambient noi
 class SpeechRecognizer:
     NOT_RECOGNIZED = "-1"
 
-    """ CONSTRUCTOR """
+    ''' CONSTRUCTOR '''
     def __init__(self, raw_text_queue):
-        self.log = logging.getLogger("src.command_recognition")
+        self.log = logging.getLogger(__name__)
 
         self.recognizer = sr.Recognizer()
         self.recognizer.pause_threshold = PAUSE_THRESHOLD
@@ -43,12 +25,12 @@ class SpeechRecognizer:
             self.recognizer.adjust_for_ambient_noise(source, NOISE_SAMPLE_DURATION)
         self.log.info("Ambient noise adjustments complete")
 
-    """ PUBLIC """
+    ''' PUBLIC '''
     def listen_in_background(self):
         self.stop_listening = self.recognizer.listen_in_background(self.mic, self._recognize_command)
         self.log.info("Listening in background...")
 
-    """ PRIVATE """
+    ''' PRIVATE '''
     def _recognize_command(self, recognizer, audio):
         try:
             raw_text = recognizer.recognize_google(audio)

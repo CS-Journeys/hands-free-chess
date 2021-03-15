@@ -1,6 +1,6 @@
 """
 Hands-Free Chess allows the user to play chess online using only their voice instead of a keyboard and mouse.
-Copyright (C) 2020  CS Journeys
+Copyright (C) 2020-2021  CS Journeys
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

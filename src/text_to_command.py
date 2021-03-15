@@ -57,7 +57,7 @@ class TextToCmdBuffer:
                 self.misinterpretations.append(Misinterpretation(actual, expected))
 
     def add_text(self, raw_text):
-        self.log.info(f"Before text addition: {self.words}")
+        self.log.debug(f"Before text addition: {self.words}")
 
         # Make the text lowercase
         lower_text = raw_text.lower()
@@ -88,7 +88,7 @@ class TextToCmdBuffer:
         if self.words[0] not in self.start_cmd_words:
             self.clear()
 
-        self.log.info(f"After text addition: {self.words}")
+        self.log.debug(f"After text addition: {self.words}")
 
         return self.words
 
@@ -108,7 +108,7 @@ class TextToCmdBuffer:
         word_ndx = 0
         possible_formats = self.command_formats.copy()
 
-        self.log.info(f"Before command extraction: {self.words}")
+        self.log.debug(f"Before command extraction: {self.words}")
 
         # Check to see if the sequence of the first 'word_ndx' number of words matches a command format
         while word_ndx < len(self.words) and len(possible_formats) > 0:
@@ -142,7 +142,7 @@ class TextToCmdBuffer:
         if command is not None:
             del self.words[:command.length]
 
-        self.log.info(f"After extraction: {self.words}")
+        self.log.debug(f"After extraction: {self.words}")
 
         return command
 

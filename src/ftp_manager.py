@@ -54,7 +54,7 @@ class FTPManager:
             self.log.debug(ftp_response)
             ftp_response = self.session.mkd(self.get_user_directory_name())
             self.log.debug(ftp_response)
-            self.log.info("Remote user directory created")
+            self.log.debug("Remote user directory created")
             self.quit_session()
         except:
             self.log.error('Unable to create the directory ' + self.get_user_directory_name(), exc_info=True)
@@ -76,7 +76,7 @@ class FTPManager:
     def start_session(self):
         self.session = ftplib.FTP(self.hostname)
         ftp_response = self.session.login(self.credentials[0], self.credentials[1])
-        self.log.info('FTP session started')
+        self.log.debug('FTP session started')
         self.log.debug(ftp_response)
 
     def upload_file(self, filename, local_path):
@@ -101,7 +101,7 @@ class FTPManager:
     def quit_session(self):
         self.session.quit()
         self.session = None
-        self.log.info('FTP session closed')
+        self.log.debug('FTP session closed')
 
     def load_config(self):
         if not path.exists(FTP_CONF_FILE):

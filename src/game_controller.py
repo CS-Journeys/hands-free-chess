@@ -1,23 +1,6 @@
-"""
-Hands-Free Chess allows the user to play chess online using only their voice instead of a keyboard and mouse.
-Copyright (C) 2020-2021  CS Journeys
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""
 import threading
+import sys
 import time
-
 import numpy as np
 import logging
 from PyQt5.QtCore import QThread, pyqtSignal
@@ -40,11 +23,11 @@ class ControllerThread(QThread):
     pause = pyqtSignal()
     help = pyqtSignal()
 
-    """ CONSTRUCTOR """
+    ''' CONSTRUCTOR '''
     def __init__(self, recipient):
         QThread.__init__(self)
         self.controller_log = logging.getLogger(__name__)
-        self.controller_log.info("Setting up controller")
+        self.controller_log.debug("Setting up controller")
 
         self.running = False
         self.paused = False
@@ -52,7 +35,11 @@ class ControllerThread(QThread):
         self.receiver = recipient
 
         self.raw_text_queue = queue.Queue(maxsize=10)
-        self.cmd_recog = SpeechRecognizer(self.raw_text_queue)
+        try:
+            self.cmd_recog = SpeechRecognizer(self.raw_text_queue)
+        except OSError as e:
+            self.controller_log.fatal("Microphone not found", exc_info=True)
+            sys.exit(1)
         self.txt_to_cmd_buffer = TextToCmdBuffer()
 
         self.board_coords = None
@@ -66,7 +53,7 @@ class ControllerThread(QThread):
         self.color = None
         self.b_manager = BoardManager(np.full((8, 8), chess_piece.ChessPiece('unknown', 'unknown')))
 
-    """ PUBLIC """
+    ''' PUBLIC '''
     def run(self):
         self.running = True
         try:
@@ -98,7 +85,7 @@ class ControllerThread(QThread):
         self.finished.emit()
 
     def resume(self):
-        self.controller_log.info("Resuming thread...")
+        self.controller_log.debug("Resuming thread...")
         self.stop_event.clear()
         self.b_recog_thread = threading.Thread(target=self.b_recog.endlessly_recognize_board,
                                                args=(self.board_queue,0.2,self.stop_event))
@@ -112,7 +99,7 @@ class ControllerThread(QThread):
         self.stop_event.set()
         self.running = False
 
-    """ PRIVATE """
+    ''' PRIVATE '''
     def _handle_command(self, raw_text):
         if not self.paused:
             if self.color is None:
@@ -147,19 +134,19 @@ class ControllerThread(QThread):
             self.board_state = None
         else:
             self.board_coords, self.board_state = self.board_queue.get()
-            self.b_manager.update_board(self.board_state)
+            self.b_manager.set_board_state(self.board_state)
 
             # Log board state
             formatted_board_state = _format_board_matrix(self.board_state)
-            self.controller_log.info(f"Formatted board state:\n{formatted_board_state}")
+            self.controller_log.info(f"Board state:\n{formatted_board_state}")
 
     def _handle_move(self, move_command):
         # Get ambiguity and legality of move
-        self.controller_log.info("Checking ambiguity")
+        self.controller_log.debug("Checking ambiguity")
         is_ambiguous = self.b_manager.is_ambiguous_move(move_command)
         is_legal = False
         if not is_ambiguous:
-            self.controller_log.info("Checking legality")
+            self.controller_log.debug("Checking legality")
             is_legal = self.b_manager.is_legal_move(move_command)
 
         # Notify user if move is ambiguous
@@ -174,8 +161,8 @@ class ControllerThread(QThread):
         # If move is unambiguous and legal, move piece with mouse
         else:
             self.controller_log.info(f"OK! Moving {move_command.text()}")
-            initial_position = self.b_manager.get_initial_position(move_command)
-            final_position = self.b_manager.get_final_position(move_command)
+            initial_position = self.b_manager.get_initial_coordinates(move_command)
+            final_position = self.b_manager.get_final_coordinates(move_command)
             mouse_controller.move_piece(initial_position, final_position, self.board_coords)
 
     def _set_piece_color(self, raw_text):

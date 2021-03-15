@@ -7,6 +7,7 @@ __pycache__/
 *.idea
 UML
 log
+install
 config/user_ftp_config.yaml
 testing/config/user_ftp_config.yaml
 *.exe
