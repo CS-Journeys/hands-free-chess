@@ -1,7 +1,10 @@
 # Hands-Free Chess
 Play chess online using only your voice instead of a keyboard and mouse!
 
-## Getting started
+## Download
+You can [download](https://github.com/cs-journeys/hands-free-chess/releases/tag/v0.2.0) the latest installable version of Hands-Free Chess for Windows
+
+## Installation (for developers)
 ### Windows
 1. Install [Python 3.6](https://www.python.org/downloads/release/python-368/) (version 3.6 is required for using the SpeechRecognition library)
 2. Use the package manager [pip](https://pip.pypa.io/en/stable/) to install dependencies  
@@ -29,9 +32,5 @@ Play chess online using only your voice instead of a keyboard and mouse!
 ```pip3 install -r requirements.txt```  
 (Installing in a [virtual environment](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/) is highly recommended)
 
-## Usage
-1. Run `python app.py` or, on linux `python3 app.py` via the command line  
-2. Follow the instructions from the "Help" button
- 
 ## License
 [GPL](LICENSE)
