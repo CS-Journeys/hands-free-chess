@@ -50,6 +50,18 @@ command_formats:
     - digit_words
     - letter_words
     - digit_words
+  implicit_destination_to_move:
+    - start_move_words
+    - to
+    - letter_words
+    - digit_words
+  explicit_destination_to_move:
+    - start_move_words
+    - letter_words
+    - digit_words
+    - to
+    - letter_words
+    - digit_words
   single_word_command:
     - single_command_words
   change_color_command:
