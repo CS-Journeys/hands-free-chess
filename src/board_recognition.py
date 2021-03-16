@@ -39,7 +39,7 @@ CHESS_PIECES = [ChessPiece('pawn', 'black'),
                 ChessPiece('queen', 'white'),
                 ChessPiece('king', 'white'),
                 ChessPiece('empty', 'empty')]
-LOG_FREQUENCY = 60 # log one image every 60 seconds
+LOG_FREQUENCY = 30 # log one image every 30 seconds
 
 
 class BoardRecognizer:
