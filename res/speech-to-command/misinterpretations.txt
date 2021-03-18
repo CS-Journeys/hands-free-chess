@@ -40,3 +40,4 @@ seven,7
 eight,8
 pond essex,pawn d6
 pain,pawn
+vaughn,pawn
