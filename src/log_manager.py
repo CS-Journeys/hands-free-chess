@@ -8,7 +8,7 @@ import sys
 from threading import Thread
 
 LOG_CONF_FILE = 'config/log_config.yaml'
-MAX_LOG_SIZE = 50 # MB
+MAX_LOG_SIZE = 5 # MB
 
 
 class LogManager:
@@ -98,5 +98,5 @@ def _delete_giant_text_log_files():
         for fname in files:
             if fname.endswith('.log'):
                 full_fname = os.path.join(root, fname)
-                if _get_file_size(full_fname, 'MB') > 3 * MAX_LOG_SIZE:
+                if _get_file_size(full_fname, 'MB') > 10 * MAX_LOG_SIZE:
                     os.remove(full_fname)
