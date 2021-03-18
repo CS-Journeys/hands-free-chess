@@ -7,6 +7,7 @@ from functools import partial
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QIcon
 
+LOGO_FILE = 'res/ui/logo.png'
 
 # ChessUI
 # Description: UI class for the hands free application
@@ -72,7 +73,7 @@ class ChessUI(QWidget):
         self.layout.addWidget(self.help)
 
         self.setWindowTitle("Hands Free Chess")  # Set window title
-        self.setWindowIcon(QIcon('res/logo.png'))  # Set window icon
+        self.setWindowIcon(QIcon(LOGO_FILE))  # Set window icon
         self.setLayout(self.layout)  # Set layout to layout object
 
         self.show()  # Display initialized UI

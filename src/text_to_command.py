@@ -7,6 +7,8 @@ import logging
 from src.command import Command
 from src.command import MoveCommand
 
+COMMAND_DICTIONARY_FILE = 'res/speech-to-command/command_dictionary.yaml'
+MISINTERPRETATIONS_FILE = 'res/speech-to-command/misinterpretations.txt'
 
 class CommandFormat:
     def __init__(self, name, components):
@@ -34,7 +36,7 @@ class TextToCmdBuffer:
         # Load keywords and command formats from a file
         self.command_formats = []
         self.keywords_dictionary = {}
-        with open('res/command_dictionary.yaml') as cmd_dict_file:
+        with open(COMMAND_DICTIONARY_FILE) as cmd_dict_file:
             cmd_dictionary = yaml.safe_load(cmd_dict_file)
             for key, value in cmd_dictionary.items():
                 if key == 'keywords':
@@ -50,7 +52,7 @@ class TextToCmdBuffer:
 
         # Load a list of common misinterpretations from a file
         self.misinterpretations = []
-        with open('res/misinterpretations.txt', 'r') as mis_file:
+        with open(MISINTERPRETATIONS_FILE, 'r') as mis_file:
             for cnt, line in enumerate(mis_file):
                 actual, expected = line.split(',')
                 expected = expected.rstrip('\n')
