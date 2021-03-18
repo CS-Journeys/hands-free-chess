@@ -6,7 +6,6 @@ import cv2
 import pyautogui
 from sklearn.neighbors import KernelDensity
 from scipy.signal import argrelextrema
-
 from src.chess_piece import ChessPiece
 
 
@@ -40,9 +39,17 @@ CHESS_PIECES = [ChessPiece('pawn', 'black'),
                 ChessPiece('king', 'white'),
                 ChessPiece('empty', 'empty')]
 LOG_FREQUENCY = 30 # log one image every 30 seconds
+EMPTY_RECOGNITION_THRESHOLD = 1000
+LOG_RECOGNITION_THRESHOLD = 4000
 
 
 class BoardRecognizer:
+    """
+    The BoardRecognizer class...
+    """
+    # TODO: add class comments
+
+    ''' CONSTRUCTOR '''
     def __init__(self):
         self.log = logging.getLogger(__name__)
         self.screen_width = pyautogui.size()[0]
@@ -54,6 +61,19 @@ class BoardRecognizer:
 
     ''' PUBLIC FUNCTIONS '''
     def endlessly_recognize_board(self, board_queue, pause_time, stop_event):
+        """
+        This function repeatedly recognizes the board until it is told to stop by the stop_event.
+
+        Parameters:
+            - board_queue: a queue in which to store the board's coordinates and state (i.e. location of each piece)
+            - pause_time: the amount of time (in seconds) to pause before running the board recognition algorithm again
+            - stop_event: a threading event that, when set, causes the function to stop
+        Output:
+            - return: none
+            - queue: the boards coordinates and state are stored in the board_queue as a two-element tuple
+                the first element is an array of values representing the x and y coordinates of each line on the board
+                the second element is a 8x8 NumPy array representing the board state (i.e. the location of each piece)
+        """
         time_until_log = LOG_FREQUENCY
         self.log.debug("Beginning endless loop of board recognition...")
         while not stop_event.is_set():
@@ -65,6 +85,17 @@ class BoardRecognizer:
                 time_until_log = LOG_FREQUENCY # reset the time until the next img log
 
     def recognize_board(self, board_queue):
+        """
+        This function finds the coordinates of each of the board's gridlines and the location of each piece on the board
+
+        Parameters:
+            - board_queue: the queue in which to store the board's coordinates and state (i.e. location of each piece)
+        Output:
+            - return: none
+            - queue: the boards coordinates and state are stored in the board_queue as a two-element tuple
+                the first element is an array of values representing the x and y coordinates of each line on the board
+                the second element is a 8x8 NumPy array representing the board state (i.e. the location of each piece)
+        """
         board_coords = self._get_board_coords()
         if board_coords is not None:
             # TODO: properly initialize the numpy array
@@ -72,13 +103,13 @@ class BoardRecognizer:
             for row in range(1, 8 + 1):
                 for col in range(1, 8 + 1):
                     board_state[row - 1][col - 1] = self._identify_piece(col, row)
-
             board_queue.put((board_coords, board_state))
 
     ''' PRIVATE FUNCTIONS '''
     def _get_board_coords(self):
         """
-        This function finds the chessboard and its coordinates on the screen.
+        This function finds the chessboard and its coordinates on the screen. It locates the chessboard by
+        searching for the checker pattern.
 
         Parameters:
             - none
@@ -208,13 +239,20 @@ class BoardRecognizer:
         return board_coords
 
     def _identify_piece(self, col, row):
-        # description  : Identify the chess piece at a given location on the board
-        # return       : ChessPiece
-        # precondition : _get_board_coords() was executed and successfully located the board,
-        #                col and row are integers
-        # postcondition: The ChessPiece object which corresponds to the specified location on
-        #                the board is returned. Note that an empty tile is a type of ChessPiece.
+        """
+        This function identifies the chess piece at a given location on the board. It uses the Mean Squared Error (mse)
+        to check which chess piece reference image is most similar to the image of the given location on the board.
+        The function returns the piece type that the most similar reference image represents.
 
+        Pre-condition:
+            - _get_board_coords() must have successfully located the board's coordinates
+        Parameters:
+            - col: an integer (0-7) that represents the column of the piece to be identified
+            - row: an integer (0-7) that represents the row of the piece to be identified
+        Output:
+            - return: the ChessPiece object which represents the piece at the given location. Note that
+                an empty tile is a type of ChessPiece
+        """
         # Crop to piece location
         crop_x1 = self.scaled_col_coords[col-1]
         crop_x2 = self.scaled_col_coords[col]
@@ -250,21 +288,26 @@ class BoardRecognizer:
         # Loop through chess pieces
         for reference_piece in CHESS_PIECES:
             current_img_difference = self._mse(screen_piece_img, reference_piece.img[tile_color])
-            if current_img_difference < min_img_difference:
+            if (current_img_difference < min_img_difference and
+                    not (reference_piece.name == 'empty' and current_img_difference > EMPTY_RECOGNITION_THRESHOLD)):
                 min_img_difference = current_img_difference
                 piece = reference_piece
-            if current_img_difference < 3000:
+            if current_img_difference < LOG_RECOGNITION_THRESHOLD:
                 self.log.debug(
                     f"Difference between ({col}, {row}) and {reference_piece.name}: {current_img_difference}")
 
         return piece
 
     def _get_processed_screenshot(self, log_this_ss=False):
-        # description  : Take a screenshot and optimize it for image recognition
-        # return       : 2D numpy array
-        # precondition : SCREEN_WIDTH and SCREEN_HEIGHT have been correctly initialized
-        # postcondition: a scaled down grayscale screenshot is returned
+        """
+        This function takes a screenshot and optimizes it for image recognition (i.e. scale and reduce to monochromatic)
 
+        Parameters:
+            - log_this_ss: a boolean value which determines whether or not the screenshot should be saved locally
+        Output:
+            - return: a two dimensional NumPy array that represents the scaled down screenshot
+            - file write: if log_this_ss is True, save the screenshot locally as a png under log/
+        """
         # Take screenshot
         img = ImageGrab.grab()
         self.log.debug(f"Screenshot size: ({img.width}, {img.height})")
@@ -284,12 +327,16 @@ class BoardRecognizer:
         return processed_screenshot
 
     def _cluster_objects(self, object_array, value_array):
-        # description  : Cluster an array of objects based on a linked array of values
-        # return       : list of lists of objects
-        # precondition : object_array and value_array are linked (ie. value_array[3]
-        #                corresponds to a property of object_array[3])
-        # postcondition: The clustered lists of objects are returned
+        """
+        This function clusters an array of objects based on a linked array of values.
+        Uses Kernel Density Estimation (KDE) clustering.
 
+        Parameters:
+            - object_array: a list of objects to be clustered by their associated values
+            - value_array: the list of values to which each object is associated
+        Output:
+            - return: a list of lists of objects, where each sub-list represents a cluster
+        """
         # Compute KDE minima
         a = np.array(value_array).reshape(-1, 1)
         kde = KernelDensity(kernel='gaussian', bandwidth=1).fit(a)
@@ -318,12 +365,15 @@ class BoardRecognizer:
         return clusters
 
     def _find_cpcs_checker_pattern(self, cpcs_array):
-        # description  : Find a checker color pattern of length 8
-        # return       : integer
-        # precondition : cpcs_array is a list of cpcs's
-        # postcondition: If a checker pattern of length 8 is detected,
-        #                return the index at which the pattern begins,
-        #                Else, return -1
+        """
+        This function finds an alternating color pattern of length 8.
+
+        Parameters:
+            - cpcs_array: an array of ConsecutivePixelColorSequences (cpcs)
+        Output:
+            - return: the index of the cpcs in the cpcs_array at which an alternating pattern of length 8 begins
+                return -1 if no pattern is found
+        """
         i = 0
         pattern_start_index = 0
         checker_pattern_is_found = False
@@ -358,12 +408,16 @@ class BoardRecognizer:
 
     @staticmethod
     def _mse(image_a, image_b):
-        # description  : Calculate the Mean Squared Error (mse) between two images.
-        #                The mse is the sum of the squared difference between the two
-        #                images. The smaller the error, the more similar the images.
-        # return       : float
-        # precondition : the two images must have the same dimension
-        # postcondition: the mse is returned
+        """
+        This function calculates the Mean Squared Error (mse) between two images. The mse is the sum of the squared
+        difference of between each pixel of the two images. The smaller the error, the more similar the images.
+
+        Parameters:
+            - image_a: a NumPy array that represents one of the two images to be compared
+            - image_b: a NumPy array of the same dimension as image_a and represents the other image to be compared
+        Output:
+            - return: a float that represents the mse between the two images
+        """
         err = np.sum((image_a.astype("float") - image_b.astype("float")) ** 2)
         err /= float(image_a.shape[0] * image_a.shape[1])
         return err
