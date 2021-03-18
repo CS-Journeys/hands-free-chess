@@ -44,7 +44,7 @@ class ControllerThread(QThread):
 
         self.board_coords = None
         self.board_state = None
-        self.board_queue = queue.Queue(maxsize=1)
+        self.board_queue = queue.Queue(maxsize=5)
         self.b_recog = BoardRecognizer()
         self.stop_event = threading.Event()
         self.b_recog_thread = threading.Thread(target=self.b_recog.endlessly_recognize_board,

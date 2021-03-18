@@ -4,6 +4,7 @@ from PIL import ImageGrab
 import numpy as np
 import cv2
 import pyautogui
+import queue
 from sklearn.neighbors import KernelDensity
 from scipy.signal import argrelextrema
 from src.chess_piece import ChessPiece
@@ -38,7 +39,7 @@ CHESS_PIECES = [ChessPiece('pawn', 'black'),
                 ChessPiece('queen', 'white'),
                 ChessPiece('king', 'white'),
                 ChessPiece('empty', 'empty')]
-LOG_FREQUENCY = 30 # log one image every 30 seconds
+LOG_FREQUENCY = 15 # log once every 'LOG_FREQUENCY' seconds
 EMPTY_RECOGNITION_THRESHOLD = 1000
 LOG_RECOGNITION_THRESHOLD = 4000
 
@@ -75,58 +76,68 @@ class BoardRecognizer:
                 the second element is a 8x8 NumPy array representing the board state (i.e. the location of each piece)
         """
         time_until_log = LOG_FREQUENCY
+        log_active = True
         self.log.debug("Beginning endless loop of board recognition...")
         while not stop_event.is_set():
-            self.recognize_board(board_queue)
+            self.recognize_board(board_queue, log_active)
             time_until_log -= pause_time
             time.sleep(pause_time)
+            log_active = False
             if time_until_log <= 0:
-                self._get_processed_screenshot(log_this_ss=True)
+                log_active = True
                 time_until_log = LOG_FREQUENCY # reset the time until the next img log
 
-    def recognize_board(self, board_queue):
+    def recognize_board(self, board_queue, log_active=False):
         """
         This function finds the coordinates of each of the board's gridlines and the location of each piece on the board
 
         Parameters:
             - board_queue: the queue in which to store the board's coordinates and state (i.e. location of each piece)
+            - log_active: True if we want to log this function call, False otherwise
         Output:
             - return: none
             - queue: the boards coordinates and state are stored in the board_queue as a two-element tuple
                 the first element is an array of values representing the x and y coordinates of each line on the board
                 the second element is a 8x8 NumPy array representing the board state (i.e. the location of each piece)
         """
-        board_coords = self._get_board_coords()
+        board_coords = self._get_board_coords(log_active)
         if board_coords is not None:
             # TODO: properly initialize the numpy array
             board_state = np.full((8, 8), ChessPiece('unknown', 'unknown'))
             for row in range(1, 8 + 1):
                 for col in range(1, 8 + 1):
-                    board_state[row - 1][col - 1] = self._identify_piece(col, row)
-            board_queue.put((board_coords, board_state))
+                    board_state[row - 1][col - 1] = self._identify_piece(col, row, log_active)
+            try:
+                board_queue.put_nowait((board_coords, board_state))
+            except queue.Full:
+                board_queue.get()
+                board_queue.put((board_coords, board_state))
 
     ''' PRIVATE FUNCTIONS '''
-    def _get_board_coords(self):
+    def _get_board_coords(self, log_active=False):
         """
         This function finds the chessboard and its coordinates on the screen. It locates the chessboard by
         searching for the checker pattern.
 
         Parameters:
             - none
+            - log_active: True if we want to log this function call, False otherwise
         Output:
             - return: if the chessboard is detected, return a tuple of two lists of floats --
                         the first list contains the x pixel coordinates of each vertical line,
                         and the second list contains the y pixel coordinates of each horizontal line
                       if the chessboard is not detected, return None
         """
-        self.log.debug("Started getting board coordinates")
+        if log_active:
+            self.log.debug("Started getting board coordinates")
 
         # Take screenshot
-        self.frame = self._get_processed_screenshot()
+        self.frame = self._get_processed_screenshot(log_active)
         ss_width = self.frame.shape[1]  # ss is short for screenshot
         ss_height = self.frame.shape[0]
-        self.log.debug("Processed screenshot: {" + f"width: {ss_width}, height: {ss_height}" + "}")
-        self.log.debug(f"Resolution: {round(100*ss_height/self.screen_height, 2)}%")
+        if log_active:
+            self.log.debug("Processed screenshot: {" + f"width: {ss_width}, height: {ss_height}" + "}")
+            self.log.debug(f"Resolution: {round(100*ss_height/self.screen_height, 2)}%")
 
         # Reset coordinates
         self.scaled_row_coords = []
@@ -136,7 +147,8 @@ class BoardRecognizer:
         col_coords_are_found = False
         i = round(ss_height / 4)
         while i < round((3 / 4) * ss_height) and not col_coords_are_found:
-            self.log.debug(f"Searching row #{i} for column coordinates")
+            if log_active:
+                self.log.debug(f"Searching row #{i} for column coordinates")
 
             # Split row into consecutive pixel color sequences
             consecutive_color_arr = [ConsecutivePixelColorSequence(self.frame[i, 0], 0)]
@@ -149,7 +161,8 @@ class BoardRecognizer:
             # 'cpcs' stands for 'ConsecutivePixelColorSequence'
             # Cluster the cpcs's by length
             consecutive_color_arr_lengths = [sequence.length for sequence in consecutive_color_arr]
-            cpcs_length_clusters = self._cluster_objects(consecutive_color_arr, consecutive_color_arr_lengths)
+            cpcs_length_clusters = self._cluster_objects(
+                consecutive_color_arr, consecutive_color_arr_lengths, log_active)
 
             # Find checker pattern
             for cluster in cpcs_length_clusters:
@@ -179,7 +192,8 @@ class BoardRecognizer:
             row_coords_are_found = False
             i = round(leftmost_chessboard_pixel)
             while i < ss_width and not row_coords_are_found:
-                self.log.debug(f"Searching column #{i} for row coordinates")
+                if log_active:
+                    self.log.debug(f"Searching column #{i} for row coordinates")
 
                 # Split column into consecutive pixel color sequences
                 consecutive_color_arr = [ConsecutivePixelColorSequence(self.frame[0, i], 0)]
@@ -192,7 +206,8 @@ class BoardRecognizer:
                 # 'cpcs' stands for 'ConsecutivePixelColorSequence'
                 # Cluster the cpcs's by length
                 consecutive_color_arr_lengths = [sequence.length for sequence in consecutive_color_arr]
-                cpcs_length_clusters = self._cluster_objects(consecutive_color_arr, consecutive_color_arr_lengths)
+                cpcs_length_clusters = self._cluster_objects(
+                    consecutive_color_arr, consecutive_color_arr_lengths, log_active)
 
                 # Find checker pattern
                 for cluster in cpcs_length_clusters:
@@ -232,13 +247,15 @@ class BoardRecognizer:
             # Set return value
             board_coords = (fullsize_col_coords, fullsize_row_coords)
         else:
-            self.log.debug("Chessboard not detected")
+            if log_active:
+                self.log.debug("Chessboard not detected")
             board_coords = None
 
-        self.log.debug(f"Board coordinates: {board_coords}")
+        if log_active:
+            self.log.debug(f"Board coordinates: {board_coords}")
         return board_coords
 
-    def _identify_piece(self, col, row):
+    def _identify_piece(self, col, row, log_active=False):
         """
         This function identifies the chess piece at a given location on the board. It uses the Mean Squared Error (mse)
         to check which chess piece reference image is most similar to the image of the given location on the board.
@@ -249,6 +266,7 @@ class BoardRecognizer:
         Parameters:
             - col: an integer (0-7) that represents the column of the piece to be identified
             - row: an integer (0-7) that represents the row of the piece to be identified
+            - log_active: True if we want to log this function call, False otherwise
         Output:
             - return: the ChessPiece object which represents the piece at the given location. Note that
                 an empty tile is a type of ChessPiece
@@ -288,14 +306,20 @@ class BoardRecognizer:
         # Loop through chess pieces
         for reference_piece in CHESS_PIECES:
             current_img_difference = self._mse(screen_piece_img, reference_piece.img[tile_color])
-            if (current_img_difference < min_img_difference and
-                    not (reference_piece.name == 'empty' and current_img_difference > EMPTY_RECOGNITION_THRESHOLD)):
-                min_img_difference = current_img_difference
-                piece = reference_piece
+            if current_img_difference < min_img_difference:
+                if not (reference_piece.name == 'empty' and current_img_difference > EMPTY_RECOGNITION_THRESHOLD):
+                    min_img_difference = current_img_difference
+                    piece = reference_piece
+                else:
+                    if log_active:
+                        self.log.debug(f"Empty MSE ({current_img_difference}) > {EMPTY_RECOGNITION_THRESHOLD}")
             if current_img_difference < LOG_RECOGNITION_THRESHOLD:
-                self.log.debug(
-                    f"Difference between ({col}, {row}) and {reference_piece.name}: {current_img_difference}")
+                if log_active:
+                    self.log.debug(
+                        f"Difference between ({col}, {row}) and {reference_piece.name}: {current_img_difference}")
 
+        if log_active:
+            self.log.debug(f"Piece: {piece.name}")
         return piece
 
     def _get_processed_screenshot(self, log_this_ss=False):
@@ -310,7 +334,8 @@ class BoardRecognizer:
         """
         # Take screenshot
         img = ImageGrab.grab()
-        self.log.debug(f"Screenshot size: ({img.width}, {img.height})")
+        if log_this_ss:
+            self.log.debug(f"Screenshot size: ({img.width}, {img.height})")
 
         # Process screenshot
         img = img.resize((
@@ -326,7 +351,7 @@ class BoardRecognizer:
 
         return processed_screenshot
 
-    def _cluster_objects(self, object_array, value_array):
+    def _cluster_objects(self, object_array, value_array, log_active=False):
         """
         This function clusters an array of objects based on a linked array of values.
         Uses Kernel Density Estimation (KDE) clustering.
@@ -334,6 +359,7 @@ class BoardRecognizer:
         Parameters:
             - object_array: a list of objects to be clustered by their associated values
             - value_array: the list of values to which each object is associated
+            - log_active: True if we want to log this function call, False otherwise
         Output:
             - return: a list of lists of objects, where each sub-list represents a cluster
         """
@@ -344,7 +370,8 @@ class BoardRecognizer:
         e = kde.score_samples(s.reshape(-1,1))
         minima = argrelextrema(e, np.less)[0]
         minima = np.append(minima, round(SCALED_HEIGHT/8) - 1)
-        self.log.debug(f"KDE Minima: {s[minima]}")
+        if log_active:
+            self.log.debug(f"KDE Minima: {s[minima]}")
 
         # Generate array of 'minima' number of arrays
         clusters = []
@@ -364,7 +391,8 @@ class BoardRecognizer:
 
         return clusters
 
-    def _find_cpcs_checker_pattern(self, cpcs_array):
+    @staticmethod
+    def _find_cpcs_checker_pattern(cpcs_array):
         """
         This function finds an alternating color pattern of length 8.
 
@@ -396,12 +424,7 @@ class BoardRecognizer:
                 color_a = cpcs_array[i].color
             i += 1
 
-        if checker_pattern_is_found:
-            self.log.debug("Checker pattern: {" +
-                           f"start pixel: {cpcs_array[pattern_start_index].start_pixel}, " +
-                           f"cpcs length: {cpcs_array[pattern_start_index].length}" +
-                           "}")
-        else:
+        if not checker_pattern_is_found:
             pattern_start_index = -1
 
         return pattern_start_index
