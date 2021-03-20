@@ -43,3 +43,5 @@ pain,pawn
 vaughn,pawn
 ponds,pawn
 ff,f
+92,knight e2
+tg4,king g4
