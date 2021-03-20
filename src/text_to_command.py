@@ -73,7 +73,7 @@ class TextToCmdBuffer:
         # Discard all new words that precede a "start command" word (if the old word buffer is empty)
         # and discard all new words that precede the word "cancel"
         for i, word in reversed(list(enumerate(new_words))):
-            if word in self.start_cmd_words and len(self.words) is 0:
+            if word in self.start_cmd_words and len(self.words) == 0:
                 new_words = new_words[i:]
             if word == "cancel":
                 if len(new_words) > i + 1:
