@@ -13,6 +13,7 @@ class BoardManager:
     UNDETERMINED_COORDINATES = (-1, -1) # static constant for indicating that no possible coordinate has been found
     AMBIGUOUS_COORDINATES = (-2, -2) # static constant for indicating that multiple possible coordinates were found
 
+    ''' CONSTRUCTOR '''
     def __init__(self, board_state, color='unknown'):
         """
         Parameters:
