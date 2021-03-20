@@ -45,3 +45,9 @@ ponds,pawn
 ff,f
 92,knight e2
 tg4,king g4
+e-cigs,e6
+esox,e6
+iii,e3
+brook,rook
+ping,king
+rugby,rook b
