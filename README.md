@@ -32,5 +32,14 @@ You can [download](https://github.com/cs-journeys/hands-free-chess/releases/tag/
 ```pip3 install -r requirements.txt```  
 (Installing in a [virtual environment](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/) is highly recommended)
 
+## Contributing
+CS Journeys welcomes contributions to [our open source projects on Github](https://github.com/CS-Journeys). All contributions, regardless of your skill level, are appreciated!
+
+### Issues
+Feel free to submit issues and enhancement requests.
+
+### Developing
+Please try to follow the project's coding style. Other than that, feel free to solve issues or be creative and add features that you think would improve HFC.
+
 ## License
 [GPL](LICENSE)
