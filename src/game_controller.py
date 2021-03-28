@@ -161,9 +161,10 @@ class ControllerThread(QThread):
 
         # Notify user if move is ambiguous
         if is_ambiguous:
-            self.send_msg.emit("Ambiguous move. Please repeat and specify which "
+            self.send_msg.emit("Ambiguous move.")
+            self.send_msg.emit("Please repeat and specify which "
                                + move_command.piece_name
-                               + " you want to move.")
+                               + " to move.")
         # Notify user if move is illegal
         elif not is_legal:
             self.controller_log.warning(f"{move_command.text()} is illegal")

@@ -65,7 +65,7 @@ class ChessUI(QWidget):
         self.scrollWidget.layout().setAlignment(Qt.AlignTop)  # Align scroll window frame
         self.scroll.setWidgetResizable(True)  # Allow resizable scroll frame
         self.scroll.setFixedHeight(400)  # Set default scroll frame height
-        self.scroll.setFixedWidth(400)  # Set default scroll frame width
+        self.scroll.setFixedWidth(440)  # Set default scroll frame width
 
         # Add widgets to layout object
         self.layout.addWidget(self.scroll)
