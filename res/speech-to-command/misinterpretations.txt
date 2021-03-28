@@ -1,3 +1,4 @@
+pond essex,pawn d6
 connie,pawn e
 night,knight
 brooke,rook
@@ -38,7 +39,6 @@ five,5
 six,6
 seven,7
 eight,8
-pond essex,pawn d6
 pain,pawn
 vaughn,pawn
 ponds,pawn

@@ -10,25 +10,15 @@ from src.command import MoveCommand
 COMMAND_DICTIONARY_FILE = 'res/speech-to-command/command_dictionary.yaml'
 MISINTERPRETATIONS_FILE = 'res/speech-to-command/misinterpretations.txt'
 
-class CommandFormat:
-    def __init__(self, name, components):
-        self.name = name
-        self.components = components
-        self.length = len(components)
-
-    def get_word_type(self, ndx):
-        if ndx < self.length:
-            return self.components[ndx]
-        else:
-            return ""
-
-class Misinterpretation:
-    def __init__(self, actual, expected):
-        self.actual = actual
-        self.expected = expected
-
 
 class TextToCmdBuffer:
+    """
+    The TextToCmdBuffer class converts raw text from the SpeechRecognizer class into Command and MoveCommand objects.
+    As raw text is progressively added to the buffer, the TextToCmdBuffer processes the raw text.
+    The ControllerThread (see game_controller.py) extracts commands from the buffer as soon as they are complete.
+    """
+
+    ''' CONSTRUCTOR '''
     def __init__(self):
         self.log = logging.getLogger(__name__)
         self.words = []
@@ -58,17 +48,30 @@ class TextToCmdBuffer:
                 expected = expected.rstrip('\n')
                 self.misinterpretations.append(Misinterpretation(actual, expected))
 
+    ''' PUBLIC FUNCTIONS '''
     def add_text(self, raw_text):
+        """
+        Convert raw text into a list of new words and update the word buffer accordingly.
+
+        All new words that precede a "start command" word are discarded (if the word buffer is empty),
+        and all new words that precede the word "cancel" are discard. The word buffer is emptied if a new command is
+        being started. Otherwise, the new words are simply appended to the word buffer.
+
+        Parameters:
+            - raw_text: a string
+        Return:
+            - the list of words in the updated word buffer
+        """
         self.log.debug(f"Before text addition: {self.words}")
 
         # Make the text lowercase
         lower_text = raw_text.lower()
 
-        # Split up the single string into multiple words
-        new_words = self._split_into_words(lower_text)
-
         # Fix misinterpretations that the Speech Recognizer commonly makes
-        self._fix_misinterpretations(new_words)
+        reinterpreted_text = self._fix_misinterpretations(lower_text)
+
+        # Split up the single string into multiple words
+        new_words = self._split_into_words(reinterpreted_text)
 
         # Discard all new words that precede a "start command" word (if the old word buffer is empty)
         # and discard all new words that precede the word "cancel"
@@ -97,7 +100,7 @@ class TextToCmdBuffer:
     def get_command(self):
         """
         Extract a command from the buffer, if the buffer contains is a sequence of words that represents a command.
-        If not, return None.
+        Otherwise, return None.
 
         Pre-condition:
             - the first element of the word buffer is a "start command" word (or the word buffer is empty)
@@ -149,25 +152,27 @@ class TextToCmdBuffer:
         return command
 
     def clear(self):
+        """
+        Clear the TextToCmdBuffer of every word.
+        """
         self.words = []
 
-    def _fix_misinterpretations(self, words):
+    ''' PRIVATE FUNCTIONS '''
+    def _fix_misinterpretations(self, text):
         """
         Fix commonly misinterpreted words.
 
         Parameters:
-            - words: a list of strings
+            - text: a lowercase string to be reinterpreted
         Return:
-            - words: the fixed words
+            - the string with corrected misinterpretations
         """
-        for i, word in enumerate(words):
-            for misinterpretation in self.misinterpretations:
-                if word == misinterpretation.actual:
-                    # Replace the actual word with the expected words
-                    words.pop(i)
-                    words[i:i] = self._split_into_words(misinterpretation.expected)
-
-        return words
+        self.log.debug(f"Text (with misinterpretations): {text}")
+        fixed_text = text
+        for misinterpretation in self.misinterpretations:
+            fixed_text = fixed_text.replace(misinterpretation.actual, misinterpretation.expected)
+        self.log.debug(f"Text (without misinterpretations): {fixed_text}")
+        return fixed_text
 
     @staticmethod
     def _split_into_words(text):
@@ -206,3 +211,48 @@ class TextToCmdBuffer:
                 words.remove(part)
 
         return words
+
+
+class CommandFormat:
+    """
+    HFC supports a variety of command formats (single-word commands like "cancel," move commands like "knight e5" or
+    "king g5 to g6," etc.)
+    A CommandFormat object stores:
+        (a) The format's name ("implicit_destination_move," "single_word_command," etc.)
+        (b) A list of strings that represents the format's component types
+            (ex: ["start_move_words", "to", "letter_words", "digit_words"])
+        (c) The length of the format (i.e., the number of words or "components" in the format)
+    """
+    def __init__(self, name, components):
+        self.name = name
+        self.components = components
+        self.length = len(components)
+
+    def get_word_type(self, ndx):
+        """
+        This function returns the type of word/component that occurs at the specified index.
+
+        Parameters:
+            - ndx: the index of the component whose type is to be returned
+        Return:
+            - The string representation of the type of word at the specified index.
+                If there are no words at the specified index, return an empty string.
+        Example:
+            components: ["start_move_words", "to", "letter_words", "digit_words"]
+            get_word_type(2) --> returns "letter_words"
+        """
+        if ndx < self.length:
+            return self.components[ndx]
+        else:
+            return ""
+
+
+class Misinterpretation:
+    """
+    For every common misinterpretation, there is
+        (a) self.actual: a string representation of the misinterpreted phrase
+        (b) self.expected: a string representation of the correct interpretation of the phrase
+    """
+    def __init__(self, actual, expected):
+        self.actual = actual
+        self.expected = expected
