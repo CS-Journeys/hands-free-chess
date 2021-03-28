@@ -39,7 +39,7 @@ CS Journeys welcomes contributions to [our open source projects on Github](https
 Feel free to submit issues and enhancement requests.
 
 ### Developing
-Please try to follow the project's coding style. Other than that, feel free to solve issues or be creative and add features that you think would improve HFC.
+Please try to follow the project's coding style. Other than that, you can solve issues or be creative and add features that you think would improve HFC.
 
 ## License
 [GPL](LICENSE)
