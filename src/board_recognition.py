@@ -46,9 +46,12 @@ LOG_RECOGNITION_THRESHOLD = 4000
 
 class BoardRecognizer:
     """
-    The BoardRecognizer class...
+    The BoardRecognizer class handles the required image recognition for locating the board on the screen and
+    determining the board's state (i.e., the location of each piece on the board).
+
+    Note that the current board recognition only supports the default chess.com chessboard style. Even then,
+    the image recognition is finicky. A better solution might be to use machine/deep learning for the image recognition.
     """
-    # TODO: add class comments
 
     ''' CONSTRUCTOR '''
     def __init__(self):

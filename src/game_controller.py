@@ -17,6 +17,16 @@ from src import chess_piece
 BOARD_CHECK_PAUSE_TIME = 1.5 # time (in seconds) to wait before rechecking for board
 
 class ControllerThread(QThread):
+    """
+    The ControllerThread class is the heart of Hands-Free Chess. The process is as follows:
+        1. Turn audio into text (using the SpeechRecognizer)
+        2. Turn text into commands (using the TextToCmdBuffer)
+        3. Identify the pieces on the board and their location on the screen (using the BoardRecognizer)
+        4. Determine if the command is legal given the state of the board (using the BoardManager)
+        6. If legal, move the piece (using the mouse_controller module)
+
+    In order to decrease lag, the speech recognition and board recognition are executed on separate threads.
+    """
     send_msg = pyqtSignal(str)
     ui_log = pyqtSignal(str)
     finished = pyqtSignal()

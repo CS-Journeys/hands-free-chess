@@ -9,13 +9,15 @@ from PyQt5.QtGui import QIcon
 
 LOGO_FILE = 'res/ui/logo.png'
 
-# ChessUI
-# Description: UI class for the hands free application
-# Extends the QWidget module
-# Parameters: None
 class ChessUI(QWidget):
+    """
+    ChessUI is the class that defines and handles the user interface.
+    Inherits from QWidget.
+    """
+
+    ''' CONSTRUCTOR '''
     def __init__(self):
-        super().__init__()  # Avoids reference to base class explicitly
+        super().__init__()  # Invoke base class constructor
         self.layout = QVBoxLayout()  # Vertically aligned window object
         self.log = logging.getLogger(__name__)  # Application log object
         self.scroll = QScrollArea()  # Scroll bar object
@@ -33,20 +35,20 @@ class ChessUI(QWidget):
         self.exit_button = QPushButton("Exit")
         self.help = QPushButton("Help")
 
-        self.thread = None # The thread that will run once 'start' is pressed
+        self.thread = None  # The thread that will run once 'start' is pressed
 
         self.paused = False
         self.init_ui()  # Instantiate UI
 
+    ''' PUBLIC '''
     def customEvent(self, event):
         if event.type() == 100:
             self.print_to_user(event.data())
 
-    # init_ui
-    # Description: Instantiates all UI widgets
-    # Parameters: None
-    # Return: Void
     def init_ui(self):
+        """
+        This function instantiates all UI widgets.
+        """
         self.log.debug("Initializing UI")
         self.start_button.clicked.connect(self.button_clicked)  # Call click function when start is clicked
         self.pause_button.setEnabled(False)
@@ -78,13 +80,12 @@ class ChessUI(QWidget):
 
         self.show()  # Display initialized UI
 
-    # button_clicked
-    # Description: Button click function
-    # Parameters: Valid button call
-    # Return: None
     def button_clicked(self):
+        """
+        This function handles button clicks.
+        """
         sender = self.sender()  # Get current button
-        if sender.text() == 'Start':  # Start button execution
+        if sender.text() == 'Start':  # Handle start button
             self.log.debug("Start button pressed")
             if self.paused:
                 self.print_to_user("Application Resumed. What's your next move?")
@@ -102,7 +103,7 @@ class ChessUI(QWidget):
             self.start_button.setEnabled(False)
             self.pause_button.setEnabled(True)
 
-        elif sender.text() == 'Pause':
+        elif sender.text() == 'Pause':  # Handle pause button
             self.log.debug("Pause button pressed")
             self.paused = True
             self.thread.paused = True
@@ -110,24 +111,25 @@ class ChessUI(QWidget):
             self.pause_button.setEnabled(False)
             self.print_to_user("Application Paused")
 
-        # Exit button execution
-        elif sender.text() == 'Exit':
+        elif sender.text() == 'Exit':  # Handle exit button
             self.log.debug("Exit button pressed")
             if self.thread.running:
                 self.thread.stop()
             self.quit_app()
 
-    # quit_app
-    # Description: Application quit function
-    # Parameters: None
-    # Return: Application termination
     def quit_app(self):
+        """
+        Cleanly shut down the program.
+        """
         self.log.info("Quitting app")
         self.print_to_user("Bye...")
         self.close()  # Close the UI
         sys.exit(0)
 
     def pause(self):
+        """
+        This function pauses the program's execution.
+        """
         self.print_to_user("Application Paused")
         self.paused = True
         self.thread.paused = True
@@ -135,10 +137,17 @@ class ChessUI(QWidget):
         self.pause_button.setEnabled(False)
 
     # print_to_user
-    # Description: Print log messages to scroll frame
-    # Parameters: valid string message to user (msg)
     # Return: Displayed message to user
     def print_to_user(self, msg):
+        """
+        This function prints messages to the scrollable text frame
+
+        Parameters:
+            - msg: the message to be printed to the user
+        Output:
+            - return: none
+            - ui: the message should be displayed to the user
+        """
         self.log.debug(f"Print: {msg}")
         temp = QLabel(msg)  # Message label UI element
         temp.setFixedHeight(20)
@@ -147,11 +156,10 @@ class ChessUI(QWidget):
         QTimer.singleShot(0, partial(self.scroll.ensureWidgetVisible, temp))
         self.show()
 
-    # open_help
-    # Description: Help button functionality
-    # Parameters: None
-    # Return: Help PDF opened locally
     def open_help(self):
+        """
+        This function uses the operating system's default PDF viewer to open the user manual.
+        """
         try:
             if sys.platform == 'win32':
                 os.system("start res/user-manual/user-manual.pdf")
