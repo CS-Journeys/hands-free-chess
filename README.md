@@ -2,7 +2,7 @@
 Play chess online using only your voice instead of a keyboard and mouse!
 
 ## Download
-You can [download](https://github.com/cs-journeys/hands-free-chess/releases/tag/v0.2.2) the latest installable version of Hands-Free Chess for Windows, Mac OS, and Linux.
+You can [download](https://github.com/cs-journeys/hands-free-chess/releases/tag/v0.2.2) the latest version of Hands-Free Chess for Windows, Mac OS, and Linux.
 
 ## Installation (for developers)
 ### Windows
