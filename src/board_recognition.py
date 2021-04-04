@@ -1,3 +1,4 @@
+import os
 import logging
 import time
 from PIL import ImageGrab
@@ -13,7 +14,6 @@ from src.chess_piece import ChessPiece
 ''' CUSTOM DATA TYPES '''
 class ConsecutivePixelColorSequence:
     """
-    A ConsecutivePixelColorSequence (cpcs) is a set of consecutive pixels in a row that have the same color value.
     Each cpcs has a color, start index, and length.
     """
     def __init__(self, color, start_pixel, length=1):
@@ -25,7 +25,7 @@ class ConsecutivePixelColorSequence:
 ''' CONSTANTS '''
 SCALED_HEIGHT = 720 # arbitrary low resolution to reduce computation time
 REFERENCE_IMG_DIM = 33 # width and height in pixels
-IMG_LOG_PATH = 'log/'
+IMG_LOG_PATH = os.path.expanduser('~/Documents/hands-free-chess/log/');
 CHESS_PIECES = [ChessPiece('pawn', 'black'),
                 ChessPiece('rook', 'black'),
                 ChessPiece('knight', 'black'),
@@ -327,7 +327,8 @@ class BoardRecognizer:
 
     def _get_processed_screenshot(self, log_this_ss=False):
         """
-        This function takes a screenshot and optimizes it for image recognition (i.e. scale and reduce to monochromatic)
+        This function takes a screenshot and optimizes it for image recognition 
+        (i.e. scale and reduce to monochromatic)
 
         Parameters:
             - log_this_ss: a boolean value which determines whether or not the screenshot should be saved locally

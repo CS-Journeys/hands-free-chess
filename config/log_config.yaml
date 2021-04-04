@@ -16,19 +16,7 @@ handlers:
   default_file_handler:
     class: logging.FileHandler
     level: DEBUG
-    filename: log/hfc.log
-    formatter: extended
-
-  img_recog_handler:
-    class: logging.FileHandler
-    level: DEBUG
-    filename: log/img_recog.log
-    formatter: extended
-
-  chess_piece_handler:
-    class: logging.FileHandler
-    level: DEBUG
-    filename: log/rules.log
+    filename: hfc.log
     formatter: extended
 
 loggers:
@@ -39,7 +27,7 @@ loggers:
 
   src.board_recognition:
     level: DEBUG
-    handlers: [img_recog_handler]
+    handlers: [default_file_handler]
     propogate: no
 
   src.board_manager:
@@ -54,7 +42,7 @@ loggers:
 
   src.chess_piece:
     level: DEBUG
-    handlers: [chess_piece_handler]
+    handlers: [default_file_handler]
     propogate: no
 
   src.mouse_controller:
@@ -73,11 +61,6 @@ loggers:
     propogate: no
 
   src.log_manager:
-    level: DEBUG
-    handlers: [ default_file_handler ]
-    propogate: no
-
-  src.ftp_manager:
     level: DEBUG
     handlers: [ default_file_handler ]
     propogate: no

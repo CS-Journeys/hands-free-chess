@@ -1,7 +1,0 @@
-host:
-  hostname: ftp.epizy.com
-  key: epiz_27697122:0osv4noC31
-  upload_path: htdocs/log/
-user:
-  id: None
-  name: None
