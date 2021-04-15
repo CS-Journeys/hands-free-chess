@@ -11,7 +11,7 @@ Table of contents
    * [Installation (for developers)](#installation-for-developers)
       * [Windows](#windows)
       * [MacOS](#macos)
-      * [Linux](#linux-debian-based-like-ubuntu)
+      * [Linux](#linux-debian-based)
    * [Contributing](#contributing)
      * [Issues](#issues)
      * [Developing](#developing)
@@ -39,7 +39,7 @@ You can [download](https://github.com/cs-journeys/hands-free-chess/releases/tag/
     c. Click the lock icon to make a change  
     d. Make sure your python IDE (PyCharm, Idle, etc.) or the `Terminal` is checked off. This allows the application to monitor your screen while you play so it can recognize the board and pieces.
     
-### Linux (Debian-based like Ubuntu)
+### Linux (Debian-based)
 1. Install Python 3.6 (check to see if 3.6 is pre-installed on your system, and if not, use your package manager)
 2. Install required linux packages  
 ```sudo apt-get install portaudio19-dev python-all-dev python3-tk python3-dev python3-venv python3-pip```
