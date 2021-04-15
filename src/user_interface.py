@@ -136,8 +136,6 @@ class ChessUI(QWidget):
         self.start_button.setEnabled(True)
         self.pause_button.setEnabled(False)
 
-    # print_to_user
-    # Return: Displayed message to user
     def print_to_user(self, msg):
         """
         This function prints messages to the scrollable text frame
