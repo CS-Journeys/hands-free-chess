@@ -51,3 +51,5 @@ iii,e3
 brook,rook
 ping,king
 rugby,rook b
+kingi,king g
+ford,4

@@ -78,6 +78,7 @@ class TextToCmdBuffer:
         for i, word in reversed(list(enumerate(new_words))):
             if word in self.start_cmd_words and len(self.words) == 0:
                 new_words = new_words[i:]
+                break
             if word == "cancel":
                 if len(new_words) > i + 1:
                     new_words = new_words[i+1:]
