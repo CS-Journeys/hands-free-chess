@@ -1,6 +1,23 @@
 # Hands-Free Chess
 Play chess online using only your voice instead of a keyboard and mouse!
 
+Table of contents
+=================
+
+<!--ts-->
+   * [Description](#hands-free-chess)
+   * [Table of contents](#table-of-contents)
+   * [Download](#download)
+   * [Installation (for developers)](#installation-for-developers)
+      * [Windows](#windows)
+      * [MacOS](#macos)
+      * [Linux](#linux-debian-based-like-ubuntu)
+   * [Contributing](#contributing)
+     * [Issues](#issues)
+     * [Developing](#developing)
+   * [License](#license)
+<!--te-->
+
 ## Download
 You can [download](https://github.com/cs-journeys/hands-free-chess/releases/tag/v0.2.2) the latest version of Hands-Free Chess for Windows, Mac OS, and Linux.
 
@@ -22,7 +39,7 @@ You can [download](https://github.com/cs-journeys/hands-free-chess/releases/tag/
     c. Click the lock icon to make a change  
     d. Make sure your python IDE (PyCharm, Idle, etc.) or the `Terminal` is checked off. This allows the application to monitor your screen while you play so it can recognize the board and pieces.
     
-### Linux (Debian/Ubuntu)
+### Linux (Debian-based like Ubuntu)
 1. Install Python 3.6 (check to see if 3.6 is pre-installed on your system, and if not, use your package manager)
 2. Install required linux packages  
 ```sudo apt-get install portaudio19-dev python-all-dev python3-tk python3-dev python3-venv python3-pip```
