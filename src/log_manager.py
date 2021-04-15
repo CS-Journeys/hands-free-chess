@@ -5,9 +5,9 @@ import yaml
 import sys
 
 LOG_CONF_FILE = 'config/log_config.yaml'
-MAX_LOG_SIZE = 5 # MB
-HFC_DOCS_DIR = os.path.expanduser('~/Documents/hands-free-chess/');
-LOG_DIR = HFC_DOCS_DIR + 'log/';
+MAX_LOG_SIZE = 20 # MB
+HFC_DOCS_DIR = os.path.expanduser('~/Documents/hands-free-chess/')
+LOG_DIR = HFC_DOCS_DIR + 'log/'
 
 class LogManager:
     """
@@ -17,7 +17,7 @@ class LogManager:
     """
     def __init__(self):
         # Global logging setup
-        if (_get_directory_size(LOG_DIR, 'MB') > MAX_LOG_SIZE):
+        if _get_directory_size(LOG_DIR, 'MB') > MAX_LOG_SIZE:
             _delete_log_files()
         _configure_logging()
 
@@ -54,7 +54,7 @@ def _configure_logging():
         logging.config.dictConfig(log_cfg)
     except ValueError as e:
         try:
-            if ('Errno 2' in str(e)):
+            if 'Errno 2' in str(e):
                 try:
                     os.mkdir(HFC_DOCS_DIR)
                 except FileExistsError:

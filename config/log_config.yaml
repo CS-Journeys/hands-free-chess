@@ -9,13 +9,13 @@ formatters:
 handlers:
   console_handler:
     class: logging.StreamHandler
-    level: INFO
+    level: ERROR
     formatter: simple
     stream: ext://sys.stdout
 
   default_file_handler:
     class: logging.FileHandler
-    level: DEBUG
+    level: INFO
     filename: hfc.log
     formatter: extended
 
