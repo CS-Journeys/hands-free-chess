@@ -6,7 +6,7 @@ import sys
 
 LOG_CONF_FILE = 'config/log_config.yaml'
 MAX_LOG_SIZE = 20 # MB
-HFC_DOCS_DIR = os.path.expanduser('~/Documents/hands-free-chess/')
+HFC_DOCS_DIR = os.path.expanduser('./')
 LOG_DIR = HFC_DOCS_DIR + 'log/'
 
 class LogManager:
