@@ -36,6 +36,8 @@ You can [download](https://github.com/CS-Journeys/hands-free-chess/releases/tag/
 CS Journeys welcomes contributions to [our open source projects on Github](https://github.com/CS-Journeys). All contributions, regardless of your skill level, are appreciated!
 
 ### Issues
+If PyAudio is not properly installing, you may need to either downgrade your Python version to 3.6 or install the pipwin library.
+
 Feel free to submit issues and enhancement requests.
 
 ### Developing
